@@ -5,60 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cross Talk — プロジェクト管理</title>
 <style>
-:root {
-  --primary:#6C63FF; --primary-light:#EEF0FF; --accent:#FF6584;
-  --green:#2ED573; --yellow:#FFD93D; --red:#FF4757;
-  --gray-50:#F8F9FC; --gray-100:#F0F2F8; --gray-300:#CBD2E0;
-  --gray-500:#8592AD; --gray-700:#4A5568; --gray-900:#1A202C;
-  --header-h:56px; --sidebar-w:220px; --radius:12px;
+:root{
+  --primary:#6C63FF;--primary-light:#EEF0FF;--accent:#FF6584;
+  --green:#2ED573;--yellow:#FFD93D;--red:#FF4757;
+  --gray-50:#F8F9FC;--gray-100:#F0F2F8;--gray-300:#CBD2E0;
+  --gray-500:#8592AD;--gray-700:#4A5568;--gray-900:#1A202C;
+  --header-h:56px;--sidebar-w:224px;--radius:12px;
   --shadow:0 2px 12px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--gray-50);color:var(--gray-900);}
 
-/* HEADER */
+/* ── LOGIN ─────────────────────────────────────────── */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#EEF0FF 0%,#F8F9FC 50%,#FFF0F5 100%);padding:20px;}
+.login-card{background:#fff;border-radius:20px;padding:36px;width:100%;max-width:420px;
+  box-shadow:0 8px 40px rgba(108,99,255,0.12);}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo-title{font-size:22px;font-weight:800;color:var(--primary);}
+.login-logo-sub{font-size:13px;color:var(--gray-500);margin-top:4px;}
+.login-tabs{display:flex;border-bottom:2px solid var(--gray-100);margin-bottom:24px;}
+.login-tab{flex:1;text-align:center;padding:10px;font-size:14px;font-weight:600;
+  color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.login-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.login-panel{display:none;}
+.login-panel.active{display:block;}
+.role-group{display:flex;gap:10px;margin-bottom:16px;}
+.role-opt{flex:1;border:2px solid var(--gray-100);border-radius:10px;padding:12px;
+  text-align:center;cursor:pointer;transition:all .15s;}
+.role-opt:hover{border-color:var(--primary);}
+.role-opt.active{border-color:var(--primary);background:var(--primary-light);}
+.role-opt .role-icon{font-size:22px;margin-bottom:4px;}
+.role-opt .role-name{font-size:13px;font-weight:600;color:var(--gray-700);}
+.role-opt.active .role-name{color:var(--primary);}
+.leader-code-section{display:none;background:#FFF4E0;border-radius:10px;padding:14px;margin-bottom:16px;}
+.leader-code-section.show{display:block;}
+.leader-code-label{font-size:12px;font-weight:600;color:#92400E;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.login-error{background:#FFF5F5;border:1px solid #FFD0D0;border-radius:8px;padding:10px 14px;
+  font-size:13px;color:var(--red);margin-bottom:14px;display:none;}
+
+/* ── APP SHELL ─────────────────────────────────────── */
+#app{display:none;}
 .header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:#fff;
   border-bottom:1px solid var(--gray-100);display:flex;align-items:center;
   justify-content:space-between;padding:0 24px;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .header-logo{font-size:16px;font-weight:700;color:var(--primary);}
 .header-logo span{font-size:12px;color:var(--gray-500);font-weight:400;margin-left:8px;}
-.header-user{display:flex;align-items:center;gap:8px;}
-.header-user label{font-size:13px;color:var(--gray-500);}
-.user-select{padding:6px 12px;border-radius:20px;border:1.5px solid var(--gray-300);
-  font-size:13px;font-weight:600;color:var(--gray-700);background:#fff;cursor:pointer;
-  outline:none;min-width:150px;}
-.user-select:focus{border-color:var(--primary);}
-.login-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
-  background:var(--primary-light);color:var(--primary);}
-.login-badge.guest{background:var(--gray-100);color:var(--gray-500);}
+.header-user{display:flex;align-items:center;gap:10px;}
+.user-info{display:flex;flex-direction:column;align-items:flex-end;}
+.user-name{font-size:13px;font-weight:700;color:var(--gray-900);}
+.user-role-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.role-leader{background:#FFF4E0;color:#D97706;}
+.role-member{background:var(--primary-light);color:var(--primary);}
+.btn-logout{padding:6px 14px;border-radius:8px;border:1.5px solid var(--gray-300);
+  background:#fff;font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;transition:all .15s;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
 
-/* LAYOUT */
+/* ── LAYOUT ────────────────────────────────────────── */
 .layout{display:flex;padding-top:var(--header-h);min-height:100vh;}
-
-/* SIDEBAR */
 .sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--gray-100);
   padding:16px 12px;position:fixed;top:var(--header-h);bottom:0;
   display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
 .nav-section{font-size:10px;font-weight:700;color:var(--gray-300);letter-spacing:1px;
   padding:0 8px;margin:14px 0 5px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
-  cursor:pointer;font-size:14px;font-weight:500;color:var(--gray-500);
-  transition:all .15s;margin-bottom:2px;}
+  cursor:pointer;font-size:14px;font-weight:500;color:var(--gray-500);transition:all .15s;margin-bottom:2px;}
 .nav-item:hover{background:var(--gray-50);color:var(--gray-700);}
 .nav-item.active{background:var(--primary-light);color:var(--primary);}
+.nav-item.leader-only{display:none;}
 
-/* MAIN */
 .main{margin-left:var(--sidebar-w);flex:1;padding:28px 32px;}
 .page{display:none;animation:fadeIn .2s;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-/* PAGE HEADER */
+/* ── COMMON ────────────────────────────────────────── */
 .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .page-title{font-size:20px;font-weight:700;}
 .page-sub{font-size:13px;color:var(--gray-500);margin-top:3px;}
-
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;
   font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit;}
 .btn-primary{background:var(--primary);color:#fff;}
@@ -68,8 +92,6 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--gray-50)
 .btn-danger{background:transparent;color:var(--red);border:1.5px solid #FFE0E0;}
 .btn-danger:hover{background:#FFF5F5;}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;}
-
-/* CARDS */
 .card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
 .card-title{font-size:12px;font-weight:600;color:var(--gray-500);text-transform:uppercase;
   letter-spacing:.5px;margin-bottom:14px;}
@@ -80,14 +102,10 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--gray-50)
   justify-content:center;font-size:20px;flex-shrink:0;}
 .stat-num{font-size:26px;font-weight:700;line-height:1;}
 .stat-label{font-size:12px;color:var(--gray-500);margin-top:3px;}
-
-/* BADGES */
 .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .badge-todo{background:#F0F2F8;color:#8592AD;}
 .badge-doing{background:#FFF4E0;color:#D97706;}
 .badge-done{background:#E6FBF1;color:#059669;}
-
-/* TABLE */
 .tbl-wrap{overflow-x:auto;}
 table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .dtbl th{padding:10px 14px;background:var(--gray-50);font-weight:600;color:var(--gray-500);
@@ -95,15 +113,11 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .dtbl td{padding:11px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
 .dtbl tr:hover td{background:var(--gray-50);}
 .dtbl tr:last-child td{border-bottom:none;}
-
-/* PROGRESS */
 .bar-bg{background:var(--gray-100);border-radius:6px;height:8px;overflow:hidden;min-width:70px;}
 .bar-fill{height:8px;border-radius:6px;transition:width .4s;}
 .fill-todo{background:var(--gray-300);}
 .fill-doing{background:linear-gradient(90deg,var(--primary),#A78BFA);}
 .fill-done{background:linear-gradient(90deg,var(--green),#34D399);}
-
-/* CHIPS */
 .a-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
   background:var(--primary-light);color:var(--primary);white-space:nowrap;}
 .due-chip{font-size:12px;color:var(--gray-500);}
@@ -114,8 +128,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .tag-content{background:#FFFBE6;color:#B45309;}
 .tag-research{background:#E6FBF1;color:#059669;}
 .tag-other{background:var(--gray-100);color:var(--gray-500);}
-
-/* PERSON TABS */
 .ptabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .ptab{padding:7px 18px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;
   border:2px solid var(--gray-100);color:var(--gray-500);transition:all .15s;}
@@ -124,8 +136,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .ppanel.active{display:block;}
 .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;}
-
-/* ACCORDION */
 .acc-item{border:1px solid var(--gray-100);border-radius:var(--radius);margin-bottom:10px;
   overflow:hidden;background:#fff;}
 .acc-hd{padding:15px 18px;cursor:pointer;display:flex;align-items:center;
@@ -139,20 +149,36 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .acc-body{display:none;padding:0 18px 18px;border-top:1px solid var(--gray-100);}
 .acc-body.open{display:block;}
 
-/* ROSTER GRID */
+/* ── ROSTER ────────────────────────────────────────── */
 .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
 .roster-card{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
   display:flex;align-items:center;gap:14px;}
 .rcard-body{flex:1;}
 .rcard-name{font-size:15px;font-weight:700;}
-.rcard-role{font-size:12px;color:var(--gray-500);margin-top:2px;}
+.rcard-role-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:3px;display:inline-block;}
 .rcard-count{font-size:11px;color:var(--primary);font-weight:600;margin-top:4px;}
-.rcard-actions{display:flex;gap:4px;}
+.rcard-email{font-size:11px;color:var(--gray-500);margin-top:2px;}
 
-/* MODAL */
+/* ── 業務割り振り ─────────────────────────────────── */
+.assign-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.assign-col{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+.assign-col-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;
+  border-bottom:1px solid var(--gray-100);}
+.assign-col-name{font-size:14px;font-weight:700;}
+.assign-col-count{font-size:12px;color:var(--gray-500);}
+.assign-task-card{border:1px solid var(--gray-100);border-radius:8px;padding:10px 12px;
+  margin-bottom:8px;background:var(--gray-50);}
+.assign-task-name{font-size:13px;font-weight:500;margin-bottom:6px;}
+.assign-task-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.assign-reassign-row{margin-top:8px;display:flex;align-items:center;gap:8px;}
+.reassign-sel{flex:1;padding:5px 8px;border-radius:6px;border:1.5px solid var(--gray-300);
+  font-size:12px;font-family:inherit;outline:none;}
+.reassign-sel:focus{border-color:var(--primary);}
+
+/* ── MODAL ─────────────────────────────────────────── */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;
   display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s;}
-.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:500px;
   max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
 .modal-title{font-size:18px;font-weight:700;margin-bottom:20px;}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:24px;
@@ -168,123 +194,191 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 .fhint{font-size:11px;color:var(--gray-500);margin-top:4px;}
 .lock-notice{background:#FFF4E0;border-radius:8px;padding:10px 14px;font-size:13px;
   color:#92400E;display:flex;align-items:center;gap:8px;margin-bottom:16px;}
-
-/* COLOR PICKER */
 .color-opts{display:flex;gap:8px;flex-wrap:wrap;}
 .color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;}
 .color-opt.sel,.color-opt:hover{border-color:var(--gray-700);transform:scale(1.15);}
-
-/* RING */
 .ring-wrap{display:flex;align-items:center;gap:16px;}
 .ring-svg{transform:rotate(-90deg);flex-shrink:0;}
 .ring-bg-c{fill:none;stroke:var(--gray-100);stroke-width:8;}
 .ring-fill-c{fill:none;stroke:var(--primary);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s;}
-
-/* EMPTY STATE */
 .empty{text-align:center;padding:40px 20px;color:var(--gray-500);}
 .empty .ei{font-size:36px;margin-bottom:10px;}
 .empty .et{font-size:14px;}
+
+/* ── FORM (shared login + modal) ───────────────────── */
+.f2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-logo">Cross Talk <span>SNS集客プロジェクト</span></div>
-  <div class="header-user">
-    <label>ログイン中：</label>
-    <select id="userSel" class="user-select" onchange="setUser(this.value)">
-      <option value="">-- 名前を選択 --</option>
-    </select>
-    <span id="loginBadge" class="login-badge guest">ゲスト</span>
-  </div>
-</header>
+<!-- ══════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-title">Cross Talk</div>
+      <div class="login-logo-sub">SNS集客プロジェクト管理</div>
+    </div>
 
-<div class="layout">
-  <aside class="sidebar">
-    <div class="nav-section">メニュー</div>
-    <div class="nav-item active" onclick="showPage('overview',this)">📊 プロジェクト全体</div>
-    <div class="nav-item" onclick="showPage('personal',this)">👤 個人ページ</div>
-    <div class="nav-item" onclick="showPage('detail',this)">📌 業務詳細</div>
-    <div class="nav-section">管理</div>
-    <div class="nav-item" onclick="showPage('roster',this)">👥 名簿管理</div>
-  </aside>
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchLoginTab('login',this)">ログイン</div>
+      <div class="login-tab" onclick="switchLoginTab('register',this)">新規登録</div>
+    </div>
 
-  <main class="main">
+    <!-- LOGIN -->
+    <div class="login-panel active" id="panelLogin">
+      <div class="login-error" id="loginError"></div>
+      <div class="fg"><label class="flabel">メールアドレス</label>
+        <input class="finput" id="loginEmail" type="email" placeholder="your@email.com"></div>
+      <div class="fg"><label class="flabel">パスワード</label>
+        <input class="finput" id="loginPw" type="password" placeholder="パスワードを入力"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">ログイン</button>
+    </div>
 
-    <!-- OVERVIEW -->
-    <div class="page active" id="page-overview">
-      <div class="page-hd">
-        <div><div class="page-title">プロジェクト全体</div><div class="page-sub">進捗確認・タスクの追加と編集</div></div>
-        <button class="btn btn-primary" onclick="openTaskModal()">＋ タスク追加</button>
-      </div>
-      <div class="grid-3" id="statsCards"></div>
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">全体進捗</div>
-        <div class="ring-wrap">
-          <svg width="72" height="72" class="ring-svg">
-            <circle class="ring-bg-c" cx="36" cy="36" r="28"/>
-            <circle class="ring-fill-c" id="pRing" cx="36" cy="36" r="28" stroke-dasharray="176" stroke-dashoffset="176"/>
-          </svg>
-          <div>
-            <div id="pPct" style="font-size:24px;font-weight:700">0%</div>
-            <div id="pLabel" style="font-size:13px;color:var(--gray-500)">0 / 0 タスク完了</div>
+    <!-- REGISTER -->
+    <div class="login-panel" id="panelRegister">
+      <div class="login-error" id="registerError"></div>
+      <div class="fg"><label class="flabel">氏名 *</label>
+        <input class="finput" id="regName" placeholder="例：山田 太郎"></div>
+      <div class="fg"><label class="flabel">メールアドレス *</label>
+        <input class="finput" id="regEmail" type="email" placeholder="your@email.com"></div>
+      <div class="fg"><label class="flabel">パスワード *</label>
+        <input class="finput" id="regPw" type="password" placeholder="6文字以上"></div>
+      <div class="fg">
+        <label class="flabel">役割を選択 *</label>
+        <div class="role-group">
+          <div class="role-opt active" id="roleOptMember" onclick="selectRole('member')">
+            <div class="role-icon">👤</div>
+            <div class="role-name">メンバー</div>
+          </div>
+          <div class="role-opt" id="roleOptLeader" onclick="selectRole('leader')">
+            <div class="role-icon">👑</div>
+            <div class="role-name">統括者</div>
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">タスク一覧</div>
-        <div class="tbl-wrap">
-          <table class="dtbl">
-            <thead><tr>
-              <th>タスク名</th><th>担当者</th><th>期限</th>
-              <th>ステータス</th><th style="width:100px">進捗</th><th style="width:110px">操作</th>
-            </tr></thead>
-            <tbody id="taskTbody"></tbody>
-          </table>
-        </div>
+      <div class="leader-code-section" id="leaderCodeSection">
+        <div class="leader-code-label">🔐 統括者コードを入力してください</div>
+        <input class="finput" id="leaderCode" type="password" placeholder="統括者コード">
       </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="doRegister()">登録</button>
     </div>
-
-    <!-- PERSONAL -->
-    <div class="page" id="page-personal">
-      <div class="page-hd">
-        <div><div class="page-title">個人ページ</div><div class="page-sub">担当者ごとのタスク一覧（名簿のメンバーのみ表示）</div></div>
-      </div>
-      <div class="ptabs" id="personTabs"></div>
-      <div id="personPanels"></div>
-    </div>
-
-    <!-- DETAIL -->
-    <div class="page" id="page-detail">
-      <div class="page-hd">
-        <div><div class="page-title">業務詳細</div><div class="page-sub">重要ポイントと進捗メモ（担当者のみ編集可）</div></div>
-      </div>
-      <div id="detailAcc"></div>
-    </div>
-
-    <!-- ROSTER -->
-    <div class="page" id="page-roster">
-      <div class="page-hd">
-        <div><div class="page-title">名簿管理</div><div class="page-sub">メンバーの追加・編集・削除</div></div>
-        <button class="btn btn-primary" onclick="openPersonModal()">＋ メンバー追加</button>
-      </div>
-      <div class="roster-grid" id="rosterGrid"></div>
-    </div>
-
-  </main>
+  </div>
 </div>
 
-<!-- MODAL: TASK -->
+<!-- ══════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════ -->
+<div id="app">
+  <header class="header">
+    <div class="header-logo">Cross Talk <span>SNS集客プロジェクト</span></div>
+    <div class="header-user">
+      <div class="user-info">
+        <div class="user-name" id="headerName">—</div>
+        <span class="user-role-badge" id="headerRole">—</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="nav-section">メニュー</div>
+      <div class="nav-item active" onclick="showPage('overview',this)">📊 プロジェクト全体</div>
+      <div class="nav-item" onclick="showPage('personal',this)">👤 個人ページ</div>
+      <div class="nav-item" onclick="showPage('detail',this)">📌 業務詳細</div>
+      <div class="nav-section">管理</div>
+      <div class="nav-item leader-only" id="navAssign" onclick="showPage('assign',this)">🗂 業務割り振り</div>
+      <div class="nav-item" onclick="showPage('roster',this)">👥 名簿一覧</div>
+    </aside>
+
+    <main class="main">
+
+      <!-- OVERVIEW -->
+      <div class="page active" id="page-overview">
+        <div class="page-hd">
+          <div><div class="page-title">プロジェクト全体</div><div class="page-sub">進捗確認とタスク管理</div></div>
+        </div>
+        <div class="grid-3" id="statsCards"></div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">全体進捗</div>
+          <div class="ring-wrap">
+            <svg width="72" height="72" class="ring-svg">
+              <circle class="ring-bg-c" cx="36" cy="36" r="28"/>
+              <circle class="ring-fill-c" id="pRing" cx="36" cy="36" r="28" stroke-dasharray="176" stroke-dashoffset="176"/>
+            </svg>
+            <div>
+              <div id="pPct" style="font-size:24px;font-weight:700">0%</div>
+              <div id="pLabel" style="font-size:13px;color:var(--gray-500)">0 / 0 タスク完了</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">タスク一覧</div>
+          <div class="tbl-wrap">
+            <table class="dtbl">
+              <thead><tr>
+                <th>タスク名</th><th>担当者</th><th>期限</th>
+                <th>ステータス</th><th style="width:100px">進捗</th><th id="overviewActionTh" style="width:110px">操作</th>
+              </tr></thead>
+              <tbody id="taskTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERSONAL -->
+      <div class="page" id="page-personal">
+        <div class="page-hd">
+          <div><div class="page-title">個人ページ</div><div class="page-sub">担当者ごとのタスク一覧</div></div>
+        </div>
+        <div class="ptabs" id="personTabs"></div>
+        <div id="personPanels"></div>
+      </div>
+
+      <!-- DETAIL -->
+      <div class="page" id="page-detail">
+        <div class="page-hd">
+          <div><div class="page-title">業務詳細</div><div class="page-sub">重要ポイントと進捗メモ（担当者のみ編集可）</div></div>
+          <button class="btn btn-primary" onclick="openTaskModal()">＋ 業務追加</button>
+        </div>
+        <div id="detailAcc"></div>
+      </div>
+
+      <!-- ASSIGN (leader only) -->
+      <div class="page" id="page-assign">
+        <div class="page-hd">
+          <div><div class="page-title">業務割り振り</div><div class="page-sub">メンバーへのタスク割り当て（統括者のみ編集可）</div></div>
+        </div>
+        <div class="assign-board" id="assignBoard"></div>
+      </div>
+
+      <!-- ROSTER -->
+      <div class="page" id="page-roster">
+        <div class="page-hd">
+          <div><div class="page-title">名簿一覧</div><div class="page-sub">登録済みメンバー</div></div>
+        </div>
+        <div class="roster-grid" id="rosterGrid"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══ MODAL: TASK ADD/EDIT ══════════════════════════ -->
 <div id="taskMov" class="modal-ov" style="display:none" onclick="closeMov('taskMov',event)">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="taskMTitle">タスクを追加</div>
-    <div class="fg"><label class="flabel">タスク名 *</label>
+    <div class="modal-title" id="taskMTitle">業務を追加</div>
+    <div class="fg"><label class="flabel">業務名 *</label>
       <input class="finput" id="tName" placeholder="例：SNSアカウントの開設"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="fg"><label class="flabel">詳細説明</label>
+      <textarea class="ftextarea" id="tDesc" placeholder="業務の目的・内容・注意事項を記載"></textarea></div>
+    <div class="f2col">
       <div class="fg"><label class="flabel">担当者 *</label><select class="fselect" id="tAssignee"></select></div>
-      <div class="fg"><label class="flabel">期限</label><input type="date" class="finput" id="tDue"></div>
+      <div class="fg"><label class="flabel">期日</label><input type="date" class="finput" id="tDue"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="f2col">
       <div class="fg"><label class="flabel">カテゴリ</label>
         <select class="fselect" id="tTag">
           <option value="sns">SNS設定</option><option value="design">デザイン</option>
@@ -300,16 +394,16 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
       <input type="range" class="frange" id="tProg" min="0" max="100" step="5" value="0"
         oninput="document.getElementById('tProgVal').textContent=this.value"></div>
     <div class="fg"><label class="flabel">重要ポイント</label>
-      <textarea class="ftextarea" id="tPoints" placeholder="1行1ポイントで入力&#10;例：ユーザー名はcrosstalk_officialで統一"></textarea>
+      <textarea class="ftextarea" id="tPoints" placeholder="1行1ポイントで入力&#10;例：アカウント名はcrosstalk_officialで統一"></textarea>
       <div class="fhint">1行1ポイント（改行で区切る）</div></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeMov('taskMov')">キャンセル</button>
-      <button class="btn btn-primary" onclick="saveTask()">保存</button>
+      <button class="btn btn-primary" onclick="saveTask()">決定</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: DETAIL EDIT -->
+<!-- ══ MODAL: DETAIL EDIT ════════════════════════════ -->
 <div id="detailMov" class="modal-ov" style="display:none" onclick="closeMov('detailMov',event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title" id="detailMTitle">進捗を更新</div>
@@ -321,21 +415,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
   </div>
 </div>
 
-<!-- MODAL: PERSON -->
-<div id="personMov" class="modal-ov" style="display:none" onclick="closeMov('personMov',event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="personMTitle">メンバーを追加</div>
-    <div class="fg"><label class="flabel">名前 *</label><input class="finput" id="pName" placeholder="例：山田"></div>
-    <div class="fg"><label class="flabel">役割</label><input class="finput" id="pRole" placeholder="例：SNS運用リード"></div>
-    <div class="fg"><label class="flabel">アバターカラー</label><div class="color-opts" id="colorOpts"></div></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeMov('personMov')">キャンセル</button>
-      <button class="btn btn-primary" onclick="savePerson()">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: CONFIRM -->
+<!-- ══ MODAL: CONFIRM ════════════════════════════════ -->
 <div id="confirmMov" class="modal-ov" style="display:none" onclick="closeMov('confirmMov',event)">
   <div class="modal" style="max-width:360px" onclick="event.stopPropagation()">
     <div class="modal-title">削除の確認</div>
@@ -348,95 +428,165 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:580px;}
 </div>
 
 <script>
-// ── COLORS & DATA ──────────────────────────────────────
-const COLORS=['#6C63FF','#FF6584','#2ED573','#FFD93D','#FF4757','#1E90FF','#FF7F50','#9B59B6'];
+// ══════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════
+const LEADER_CODE = '101010';
+const COLORS = ['#6C63FF','#FF6584','#2ED573','#FFD93D','#FF4757','#1E90FF','#FF7F50','#9B59B6','#20BF6B','#EB3B5A'];
 
-const DEF_ROSTER=[
-  {id:1,name:'山田',role:'SNS運用リード',color:'#6C63FF'},
-  {id:2,name:'鈴木',role:'デザイン担当',color:'#FF6584'},
-  {id:3,name:'田中',role:'コンテンツ担当',color:'#2ED573'},
-];
+const AVATAR_COLORS = ['#6C63FF','#FF6584','#2ED573','#FFD93D','#FF4757','#1E90FF','#FF7F50','#9B59B6'];
 
-const DEF_TASKS=[
-  {id:1,name:'アカウントセッティング（X/TikTok/Instagram）',assignee:'山田',due:'2026-05-01',status:'todo',progress:0,tag:'sns',
-   points:['X・TikTok・Instagramの3媒体すべてを同日開設する','プロフィール写真はブランドロゴ統一','ユーザー名は「crosstalk_official」で統一できるか各媒体で確認','開設後すぐにビジネス/クリエイターアカウントに切り替える'],notes:''},
-  {id:2,name:'Canvaテンプレート作成',assignee:'鈴木',due:'2026-05-05',status:'todo',progress:0,tag:'design',
-   points:['Canvaチームを作成してメンバー招待','投稿用（1080×1080）・ストーリー用（1080×1920）の2種類','テキスト差し替えだけで使えるシンプルなデザインにする'],notes:''},
-  {id:3,name:'ブランドカラー・フォントのガイドライン策定',assignee:'鈴木',due:'2026-05-05',status:'todo',progress:0,tag:'design',
-   points:['メインカラー1色＋アクセントカラー1色の計2色で構成','フォント：日本語Noto Sans JP、英語Poppins 推奨','決定後はCanvaのブランドキットに登録'],notes:''},
-  {id:4,name:'各媒体プロフィール文の執筆',assignee:'山田',due:'2026-05-07',status:'todo',progress:0,tag:'content',
-   points:['各媒体150文字以内でサービスの価値を端的に伝える','CTAは「ダウンロードはプロフィールリンクから」に統一','英語版も併記してアジア圏へのリーチを上げる'],notes:''},
-  {id:5,name:'1ヶ月分のコンテンツカレンダー作成',assignee:'全員',due:'2026-05-10',status:'todo',progress:0,tag:'content',
-   points:['4週分・週4〜5投稿ペースで計画（合計約20投稿）','「英語学習」「旅行」「アプリ使い方」の3軸でローテーション','GoogleスプレッドシートでURL共有'],notes:''},
-  {id:6,name:'ターゲットペルソナの詳細設計',assignee:'山田',due:'2026-04-25',status:'doing',progress:50,tag:'research',
-   points:['「28歳・会社員・海外旅行好き」など具体的な人物像で設定','英語学習・旅行好き・友人作りの3タイプを想定','アジア圏（韓国・台湾・タイ・ベトナム）のニュアンス差を意識'],notes:''},
-  {id:7,name:'競合アプリのSNSリサーチ',assignee:'鈴木',due:'2026-04-28',status:'doing',progress:40,tag:'research',
-   points:['対象：HingeRadio・Wakie・Slowly・HelloTalk・Tandem','比較軸：フォロワー数・投稿頻度・エンゲージメント率','「うまくいっている投稿」の共通点を3つ以上抽出'],notes:''},
-  {id:8,name:'TikTok第1弾動画の企画・台本作成',assignee:'田中',due:'2026-04-30',status:'doing',progress:30,tag:'content',
-   points:['コンセプト：「見知らぬ外国人との5分間」疑似体験ドラマ仕立て','尺は30〜60秒。最初の3秒でフックを入れる','字幕は日本語＋英語の2行表記'],notes:''},
-  {id:9,name:'前提要件の解説書 作成',assignee:'山田',due:'2026-04-21',status:'done',progress:100,tag:'content',
-   points:['ターゲット・媒体方向性・アプリ優位性を定義','docs/前提要件の解説書.md に保存済み'],notes:'完了。ドキュメントはdocs/フォルダに格納済み。'},
-  {id:10,name:'プロジェクトディレクトリ構築',assignee:'山田',due:'2026-04-21',status:'done',progress:100,tag:'sns',
-   points:['GitHubリポジトリ作成とプッシュ完了','meetings/・management/・docs/ の構造構築済み'],notes:'完了。GitHub Pages で公開予定。'},
-];
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let S = { users:[], tasks:[], currentUser:null };
+let editTaskId = null, editDetailId = null, confirmCb = null;
+let selectedRole = 'member';
 
-// ── STATE ──────────────────────────────────────────────
-let S={roster:[],tasks:[],currentUser:null};
-let editTaskId=null, editPersonId=null, editDetailId=null, selColor=COLORS[0], confirmCb=null;
-
-function load(){
-  const r=localStorage.getItem('ct_r'), t=localStorage.getItem('ct_t'), u=localStorage.getItem('ct_u');
-  S.roster = r ? JSON.parse(r) : JSON.parse(JSON.stringify(DEF_ROSTER));
-  S.tasks  = t ? JSON.parse(t) : JSON.parse(JSON.stringify(DEF_TASKS));
-  S.currentUser = u || null;
-}
-function save(){
-  localStorage.setItem('ct_r',JSON.stringify(S.roster));
-  localStorage.setItem('ct_t',JSON.stringify(S.tasks));
-  S.currentUser ? localStorage.setItem('ct_u',S.currentUser) : localStorage.removeItem('ct_u');
+// ══════════════════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════════════════
+function load() {
+  const u = localStorage.getItem('ct2_users');
+  const t = localStorage.getItem('ct2_tasks');
+  const cu = localStorage.getItem('ct2_currentUser');
+  S.users = u ? JSON.parse(u) : [];
+  S.tasks = t ? JSON.parse(t) : [];
+  S.currentUser = cu ? JSON.parse(cu) : null;
 }
 
-// ── NAVIGATION ─────────────────────────────────────────
-function showPage(name,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  if(el) el.classList.add('active');
-  if(name==='overview') renderOverview();
-  else if(name==='personal') renderPersonal();
-  else if(name==='detail') renderDetail();
-  else if(name==='roster') renderRoster();
+function save() {
+  localStorage.setItem('ct2_users', JSON.stringify(S.users));
+  localStorage.setItem('ct2_tasks', JSON.stringify(S.tasks));
+  if (S.currentUser) localStorage.setItem('ct2_currentUser', JSON.stringify(S.currentUser));
+  else localStorage.removeItem('ct2_currentUser');
 }
 
-// ── USER ───────────────────────────────────────────────
-function setUser(v){
-  S.currentUser=v||null; save();
-  const b=document.getElementById('loginBadge');
-  if(S.currentUser){b.textContent=S.currentUser;b.className='login-badge';}
-  else{b.textContent='ゲスト';b.className='login-badge guest';}
-  const active=document.querySelector('.page.active');
-  if(active) showPage(active.id.replace('page-',''),null);
-}
-function refreshUserSel(){
-  const sel=document.getElementById('userSel');
-  sel.innerHTML='<option value="">-- 名前を選択 --</option>';
-  [...S.roster.map(r=>r.name),'全員'].forEach(n=>{
-    const o=document.createElement('option');
-    o.value=n; o.textContent=n;
-    if(n===S.currentUser) o.selected=true;
-    sel.appendChild(o);
-  });
-  setUser(S.currentUser);
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+function switchLoginTab(tab, el) {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.login-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
 }
 
-// ── OVERVIEW ───────────────────────────────────────────
-function renderOverview(){
-  const tasks=S.tasks, total=tasks.length;
-  const done=tasks.filter(t=>t.status==='done').length;
-  const doing=tasks.filter(t=>t.status==='doing').length;
-  const pct=total?Math.round(done/total*100):0;
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('roleOptMember').classList.toggle('active', role === 'member');
+  document.getElementById('roleOptLeader').classList.toggle('active', role === 'leader');
+  document.getElementById('leaderCodeSection').classList.toggle('show', role === 'leader');
+}
 
-  document.getElementById('statsCards').innerHTML=`
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pw = document.getElementById('regPw').value;
+
+  if (!name) return showError('registerError', '氏名を入力してください');
+  if (!email || !email.includes('@')) return showError('registerError', '有効なメールアドレスを入力してください');
+  if (pw.length < 6) return showError('registerError', 'パスワードは6文字以上にしてください');
+  if (S.users.find(u => u.email === email)) return showError('registerError', 'このメールアドレスはすでに登録されています');
+
+  if (selectedRole === 'leader') {
+    const code = document.getElementById('leaderCode').value;
+    if (code !== LEADER_CODE) return showError('registerError', '統括者コードが正しくありません');
+  }
+
+  const color = AVATAR_COLORS[S.users.length % AVATAR_COLORS.length];
+  const newUser = {
+    id: Date.now(),
+    name, email, password: pw,
+    role: selectedRole,
+    color,
+    createdAt: new Date().toISOString()
+  };
+  S.users.push(newUser);
+  S.currentUser = { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, color: newUser.color };
+  save();
+  launchApp();
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pw = document.getElementById('loginPw').value;
+  const user = S.users.find(u => u.email === email && u.password === pw);
+  if (!user) return showError('loginError', 'メールアドレスまたはパスワードが正しくありません');
+  S.currentUser = { id: user.id, name: user.name, email: user.email, role: user.role, color: user.color };
+  save();
+  launchApp();
+}
+
+function doLogout() {
+  S.currentUser = null;
+  save();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  // Reset login form
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPw').value = '';
+}
+
+function launchApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const cu = S.currentUser;
+  document.getElementById('headerName').textContent = cu.name;
+  const badge = document.getElementById('headerRole');
+  if (cu.role === 'leader') {
+    badge.textContent = '👑 統括者';
+    badge.className = 'user-role-badge role-leader';
+    // Show leader-only nav items
+    document.querySelectorAll('.leader-only').forEach(el => el.style.display = 'flex');
+  } else {
+    badge.textContent = '👤 メンバー';
+    badge.className = 'user-role-badge role-member';
+    document.querySelectorAll('.leader-only').forEach(el => el.style.display = 'none');
+  }
+  // Reset to overview
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-overview').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderOverview();
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function showPage(name, el) {
+  // Block non-leaders from assign page
+  if (name === 'assign' && S.currentUser?.role !== 'leader') return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'overview') renderOverview();
+  else if (name === 'personal') renderPersonal();
+  else if (name === 'detail') renderDetail();
+  else if (name === 'assign') renderAssign();
+  else if (name === 'roster') renderRoster();
+}
+
+// ══════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════
+function renderOverview() {
+  const tasks = S.tasks, total = tasks.length;
+  const done = tasks.filter(t => t.status === 'done').length;
+  const doing = tasks.filter(t => t.status === 'doing').length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const isLeader = S.currentUser?.role === 'leader';
+
+  document.getElementById('statsCards').innerHTML = `
     <div class="stat-card"><div class="stat-icon" style="background:#EEF0FF">📋</div>
       <div><div class="stat-num" style="color:var(--primary)">${total}</div><div class="stat-label">総タスク数</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#FFF4E0">⏳</div>
@@ -444,70 +594,73 @@ function renderOverview(){
     <div class="stat-card"><div class="stat-icon" style="background:#E6FBF1">✅</div>
       <div><div class="stat-num" style="color:#059669">${done}</div><div class="stat-label">完了済み</div></div></div>`;
 
-  const circ=176, offset=circ-(circ*pct/100);
-  document.getElementById('pRing').style.strokeDashoffset=offset;
-  document.getElementById('pPct').textContent=pct+'%';
-  document.getElementById('pLabel').textContent=`${done} / ${total} タスク完了`;
+  const circ = 176, offset = circ - (circ * pct / 100);
+  document.getElementById('pRing').style.strokeDashoffset = offset;
+  document.getElementById('pPct').textContent = pct + '%';
+  document.getElementById('pLabel').textContent = `${done} / ${total} タスク完了`;
 
-  const tbody=document.getElementById('taskTbody');
-  tbody.innerHTML='';
-  if(!tasks.length){
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--gray-500)">タスクがありません。「＋ タスク追加」から追加してください。</td></tr>';
+  const tbody = document.getElementById('taskTbody');
+  tbody.innerHTML = '';
+  // Hide action column for members
+  document.getElementById('overviewActionTh').style.display = isLeader ? '' : 'none';
+
+  if (!tasks.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--gray-500)">
+      業務詳細ページの「＋ 業務追加」からタスクを追加してください</td></tr>`;
     return;
   }
-  tasks.forEach(t=>{
-    const ov=t.status!=='done'&&t.due&&new Date(t.due)<new Date();
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
+  tasks.forEach(t => {
+    const ov = t.status !== 'done' && t.due && new Date(t.due) < new Date();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td><div style="font-weight:500">${esc(t.name)}</div>
         <span class="tag-chip tag-${t.tag||'other'}" style="margin-top:3px;display:inline-block">${tagL(t.tag)}</span></td>
       <td><span class="a-chip">${esc(t.assignee)}</span></td>
-      <td><span class="due-chip ${ov?'overdue':''}">${t.due?t.due.slice(5):'—'}</span></td>
+      <td><span class="due-chip ${ov?'overdue':''}">${t.due ? t.due.slice(5) : '—'}</span></td>
       <td><span class="badge badge-${t.status}">${stL(t.status)}</span></td>
       <td><div style="display:flex;align-items:center;gap:6px">
         <div class="bar-bg" style="flex:1"><div class="bar-fill fill-${t.status}" style="width:${t.progress}%"></div></div>
         <span style="font-size:11px;color:var(--gray-500);width:28px">${t.progress}%</span></div></td>
-      <td><div style="display:flex;gap:4px">
+      <td style="display:${isLeader?'':'none'}"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost btn-sm" onclick="openTaskModal(${t.id})">編集</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDel('task',${t.id})">削除</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDel(${t.id})">削除</button>
       </div></td>`;
     tbody.appendChild(tr);
   });
 }
 
-// ── PERSONAL ───────────────────────────────────────────
-function renderPersonal(){
-  const tabs=document.getElementById('personTabs');
-  const panels=document.getElementById('personPanels');
-  tabs.innerHTML=''; panels.innerHTML='';
+// ══════════════════════════════════════════════════════
+// PERSONAL
+// ══════════════════════════════════════════════════════
+function renderPersonal() {
+  const tabs = document.getElementById('personTabs');
+  const panels = document.getElementById('personPanels');
+  tabs.innerHTML = ''; panels.innerHTML = '';
 
-  if(!S.roster.length){
-    tabs.innerHTML='<div class="empty"><div class="ei">👥</div><div class="et">名簿管理からメンバーを追加してください</div></div>';
+  if (!S.users.length) {
+    tabs.innerHTML = '<div class="empty"><div class="ei">👥</div><div class="et">メンバーが登録されていません</div></div>';
     return;
   }
 
-  // 名簿にある人 + 全員（共同タスクがある場合）
-  const names=[...S.roster.map(r=>r.name)];
-  if(S.tasks.some(t=>t.assignee==='全員')) names.push('全員');
+  const names = S.users.map(u => u.name);
+  names.forEach((name, i) => {
+    const user = S.users.find(u => u.name === name);
+    const myTasks = S.tasks.filter(t => t.assignee === name);
+    const done = myTasks.filter(t => t.status === 'done').length;
+    const pct = myTasks.length ? Math.round(done / myTasks.length * 100) : 0;
 
-  names.forEach((name,i)=>{
-    const person=S.roster.find(r=>r.name===name)||{name:'全員',role:'共同タスク',color:'#FFD93D'};
-    const myTasks=S.tasks.filter(t=>t.assignee===name);
-    const done=myTasks.filter(t=>t.status==='done').length;
-    const pct=myTasks.length?Math.round(done/myTasks.length*100):0;
-
-    const tab=document.createElement('div');
-    tab.className='ptab'+(i===0?' active':'');
-    tab.textContent=name;
-    tab.onclick=()=>{
-      document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.ppanel').forEach(p=>p.classList.remove('active'));
+    const tab = document.createElement('div');
+    tab.className = 'ptab' + (i === 0 ? ' active' : '');
+    tab.textContent = name;
+    tab.onclick = () => {
+      document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.ppanel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('pp-'+name).classList.add('active');
+      document.getElementById('pp-' + i).classList.add('active');
     };
     tabs.appendChild(tab);
 
-    const rows=myTasks.map(t=>`
+    const rows = myTasks.map(t => `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100)">
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid ${t.status==='done'?'#2ED573':'var(--gray-300)'};background:${t.status==='done'?'#2ED573':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${t.status==='done'?'<span style="font-size:9px;color:#fff;font-weight:700">✓</span>':''}</div>
@@ -516,48 +669,61 @@ function renderPersonal(){
           <span class="tag-chip tag-${t.tag||'other'}" style="display:inline-block;margin-top:2px">${tagL(t.tag)}</span></div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <span class="badge badge-${t.status}">${stL(t.status)}</span>
-          <span style="font-size:11px;color:var(--gray-500)">${t.due?t.due.slice(5):'—'}</span></div>
+          <span style="font-size:11px;color:var(--gray-500)">${t.due ? t.due.slice(5) : '—'}</span></div>
       </div>`).join('');
 
-    const panel=document.createElement('div');
-    panel.className='ppanel'+(i===0?' active':'');
-    panel.id='pp-'+name;
-    panel.innerHTML=`<div class="card">
+    const panel = document.createElement('div');
+    panel.className = 'ppanel' + (i === 0 ? ' active' : '');
+    panel.id = 'pp-' + i;
+    const roleBadgeStyle = user.role === 'leader' ? 'background:#FFF4E0;color:#D97706' : 'background:var(--primary-light);color:var(--primary)';
+    const roleLabel = user.role === 'leader' ? '👑 統括者' : '👤 メンバー';
+    panel.innerHTML = `<div class="card">
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-        <div class="avatar" style="background:${person.color}">${name[0]}</div>
-        <div style="flex:1"><div style="font-size:16px;font-weight:700">${esc(name)}</div>
-          <div style="font-size:12px;color:var(--gray-500)">${esc(person.role)} · ${myTasks.length}件担当 · 完了率 ${pct}%</div></div>
+        <div class="avatar" style="background:${user.color||'#6C63FF'}">${name[0]}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:16px;font-weight:700">${esc(name)}</div>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;${roleBadgeStyle}">${roleLabel}</span>
+          </div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:2px">${esc(user.email)} · ${myTasks.length}件担当 · 完了率 ${pct}%</div>
+        </div>
       </div>
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);margin-bottom:5px"><span>進捗</span><span>${pct}%</span></div>
-        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${person.color}"></div></div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${user.color||'#6C63FF'}"></div></div>
       </div>
-      ${myTasks.length?rows:'<div style="padding:20px 0;text-align:center;color:var(--gray-500);font-size:13px">担当タスクなし</div>'}
+      ${myTasks.length ? rows : '<div style="padding:20px 0;text-align:center;color:var(--gray-500);font-size:13px">担当タスクなし</div>'}
     </div>`;
     panels.appendChild(panel);
   });
 }
 
-// ── DETAIL ─────────────────────────────────────────────
-function renderDetail(){
-  const acc=document.getElementById('detailAcc');
-  acc.innerHTML='';
-  if(!S.tasks.length){
-    acc.innerHTML='<div class="empty"><div class="ei">📌</div><div class="et">タスクがありません</div></div>';
+// ══════════════════════════════════════════════════════
+// DETAIL
+// ══════════════════════════════════════════════════════
+function renderDetail() {
+  const acc = document.getElementById('detailAcc');
+  acc.innerHTML = '';
+  if (!S.tasks.length) {
+    acc.innerHTML = '<div class="empty"><div class="ei">📌</div><div class="et">「＋ 業務追加」からタスクを追加してください</div></div>';
     return;
   }
-  S.tasks.forEach(t=>{
-    const canEdit=S.currentUser&&(S.currentUser===t.assignee||(t.assignee==='全員'&&S.currentUser));
-    const pts=t.points&&t.points.length
-      ?'<ul style="padding-left:18px;margin-bottom:12px">'+t.points.map(p=>`<li style="font-size:13px;line-height:1.9;color:var(--gray-700)">${esc(p)}</li>`).join('')+'</ul>'
-      :'<p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">ポイント未設定</p>';
-    const ntHTML=t.notes
-      ?`<div style="background:#F8F9FC;border-radius:8px;padding:12px;font-size:13px;color:var(--gray-700);white-space:pre-wrap;line-height:1.7">${esc(t.notes)}</div>`
-      :'<div style="font-size:13px;color:var(--gray-500);font-style:italic">進捗メモなし</div>';
+  S.tasks.forEach(t => {
+    const cu = S.currentUser;
+    const canEdit = cu && (cu.role === 'leader' || cu.name === t.assignee);
+    const pts = t.points && t.points.length
+      ? '<ul style="padding-left:18px;margin-bottom:12px">' + t.points.map(p => `<li style="font-size:13px;line-height:1.9;color:var(--gray-700)">${esc(p)}</li>`).join('') + '</ul>'
+      : '<p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">ポイント未設定</p>';
+    const ntHTML = t.notes
+      ? `<div style="background:#F8F9FC;border-radius:8px;padding:12px;font-size:13px;color:var(--gray-700);white-space:pre-wrap;line-height:1.7">${esc(t.notes)}</div>`
+      : '<div style="font-size:13px;color:var(--gray-500);font-style:italic">進捗メモなし</div>';
+    const descHTML = t.description
+      ? `<div style="background:#F0F2F8;border-radius:8px;padding:12px;font-size:13px;color:var(--gray-700);margin-bottom:12px;line-height:1.7">${esc(t.description)}</div>`
+      : '';
 
-    const item=document.createElement('div');
-    item.className='acc-item';
-    item.innerHTML=`
+    const item = document.createElement('div');
+    item.className = 'acc-item';
+    item.innerHTML = `
       <div class="acc-hd" onclick="toggleAcc(this)">
         <div class="acc-title"><span class="tag-chip tag-${t.tag||'other'}">${tagL(t.tag)}</span><span>${esc(t.name)}</span></div>
         <div class="acc-meta">
@@ -566,15 +732,16 @@ function renderDetail(){
           <span class="acc-chevron">▾</span></div>
       </div>
       <div class="acc-body">
-        <div style="display:flex;gap:16px;margin:14px 0 12px;flex-wrap:wrap">
-          <span style="font-size:12px;color:var(--gray-500)">期限 <strong style="color:var(--gray-700)">${t.due||'—'}</strong></span>
+        ${descHTML}
+        <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--gray-500)">期日 <strong style="color:var(--gray-700)">${t.due||'—'}</strong></span>
           <span style="font-size:12px;color:var(--gray-500)">進捗 <strong style="color:var(--primary)">${t.progress}%</strong></span>
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">重要ポイント</div>
         ${pts}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px">進捗メモ</div>
-          ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openDetailModal(${t.id})">✏️ 編集</button>`:`<span style="font-size:11px;color:var(--gray-500)">🔒 ${esc(t.assignee)}のみ編集可</span>`}
+          ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="openDetailModal(${t.id})">✏️ 編集</button>` : `<span style="font-size:11px;color:var(--gray-500)">🔒 ${esc(t.assignee)}のみ編集可</span>`}
         </div>
         ${ntHTML}
       </div>`;
@@ -582,95 +749,163 @@ function renderDetail(){
   });
 }
 
-function toggleAcc(hd){
-  const body=hd.nextElementSibling;
-  const ch=hd.querySelector('.acc-chevron');
-  body.classList.toggle('open'); ch.classList.toggle('open');
+function toggleAcc(hd) {
+  hd.nextElementSibling.classList.toggle('open');
+  hd.querySelector('.acc-chevron').classList.toggle('open');
 }
 
-// ── ROSTER ─────────────────────────────────────────────
-function renderRoster(){
-  const grid=document.getElementById('rosterGrid');
-  grid.innerHTML='';
-  if(!S.roster.length){
-    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">メンバーを追加してください</div></div>';
+// ══════════════════════════════════════════════════════
+// ASSIGN (leader only)
+// ══════════════════════════════════════════════════════
+function renderAssign() {
+  const board = document.getElementById('assignBoard');
+  board.innerHTML = '';
+  const isLeader = S.currentUser?.role === 'leader';
+
+  if (!S.users.length) {
+    board.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">メンバーが登録されていません</div></div>';
     return;
   }
-  S.roster.forEach(p=>{
-    const cnt=S.tasks.filter(t=>t.assignee===p.name).length;
-    const card=document.createElement('div');
-    card.className='roster-card';
-    card.innerHTML=`
-      <div class="avatar" style="background:${p.color}">${p.name[0]}</div>
-      <div class="rcard-body">
-        <div class="rcard-name">${esc(p.name)}</div>
-        <div class="rcard-role">${esc(p.role||'役割未設定')}</div>
-        <div class="rcard-count">担当タスク ${cnt}件</div>
+
+  S.users.forEach(user => {
+    const myTasks = S.tasks.filter(t => t.assignee === user.name);
+    const col = document.createElement('div');
+    col.className = 'assign-col';
+
+    const taskCards = myTasks.map(t => {
+      const ov = t.status !== 'done' && t.due && new Date(t.due) < new Date();
+      const opts = S.users.map(u => `<option value="${esc(u.name)}" ${u.name===t.assignee?'selected':''}>${esc(u.name)}</option>`).join('');
+      return `<div class="assign-task-card">
+        <div class="assign-task-name">${esc(t.name)}</div>
+        <div class="assign-task-meta">
+          <span class="badge badge-${t.status}">${stL(t.status)}</span>
+          <span class="due-chip ${ov?'overdue':''}">${t.due?t.due.slice(5):'—'}</span>
+        </div>
+        ${isLeader ? `<div class="assign-reassign-row">
+          <select class="reassign-sel" onchange="reassignTask(${t.id},this.value)">${opts}</select>
+          <span style="font-size:11px;color:var(--gray-500)">担当変更</span>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
+    const roleLabel = user.role === 'leader' ? '👑 統括者' : '👤 メンバー';
+    col.innerHTML = `
+      <div class="assign-col-header">
+        <div class="avatar" style="background:${user.color||'#6C63FF'};width:34px;height:34px;font-size:14px">${user.name[0]}</div>
+        <div>
+          <div class="assign-col-name">${esc(user.name)}</div>
+          <div class="assign-col-count">${roleLabel} · ${myTasks.length}件</div>
+        </div>
       </div>
-      <div class="rcard-actions">
-        <button class="btn btn-ghost btn-sm" onclick="openPersonModal(${p.id})" style="padding:6px 8px">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDel('person',${p.id})" style="padding:6px 8px">🗑️</button>
+      ${myTasks.length ? taskCards : '<div style="font-size:13px;color:var(--gray-500);text-align:center;padding:16px 0">担当タスクなし</div>'}`;
+    board.appendChild(col);
+  });
+}
+
+function reassignTask(taskId, newAssignee) {
+  const t = S.tasks.find(x => x.id === taskId);
+  if (t) { t.assignee = newAssignee; save(); renderAssign(); renderOverview(); }
+}
+
+// ══════════════════════════════════════════════════════
+// ROSTER
+// ══════════════════════════════════════════════════════
+function renderRoster() {
+  const grid = document.getElementById('rosterGrid');
+  grid.innerHTML = '';
+  if (!S.users.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">登録済みメンバーがいません</div></div>';
+    return;
+  }
+  S.users.forEach(user => {
+    const cnt = S.tasks.filter(t => t.assignee === user.name).length;
+    const isLeader = user.role === 'leader';
+    const badgeStyle = isLeader ? 'background:#FFF4E0;color:#D97706' : 'background:var(--primary-light);color:var(--primary)';
+    const roleLabel = isLeader ? '👑 統括者' : '👤 メンバー';
+    const card = document.createElement('div');
+    card.className = 'roster-card';
+    card.innerHTML = `
+      <div class="avatar" style="background:${user.color||'#6C63FF'}">${user.name[0]}</div>
+      <div class="rcard-body">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="rcard-name">${esc(user.name)}</div>
+          <span class="rcard-role-badge" style="${badgeStyle}">${roleLabel}</span>
+        </div>
+        <div class="rcard-email">${esc(user.email)}</div>
+        <div class="rcard-count">担当タスク ${cnt}件</div>
       </div>`;
     grid.appendChild(card);
   });
 }
 
-// ── TASK MODAL ─────────────────────────────────────────
-function openTaskModal(id){
-  editTaskId=id||null;
-  const sel=document.getElementById('tAssignee');
-  sel.innerHTML=S.roster.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('')+'<option value="全員">全員</option>';
+// ══════════════════════════════════════════════════════
+// TASK MODAL
+// ══════════════════════════════════════════════════════
+function openTaskModal(id) {
+  editTaskId = id || null;
+  const sel = document.getElementById('tAssignee');
+  sel.innerHTML = S.users.map(u => `<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
 
-  if(id){
-    const t=S.tasks.find(x=>x.id===id); if(!t) return;
-    document.getElementById('taskMTitle').textContent='タスクを編集';
-    document.getElementById('tName').value=t.name;
-    sel.value=t.assignee;
-    document.getElementById('tDue').value=t.due||'';
-    document.getElementById('tTag').value=t.tag||'sns';
-    document.getElementById('tStatus').value=t.status;
-    document.getElementById('tProg').value=t.progress;
-    document.getElementById('tProgVal').textContent=t.progress;
-    document.getElementById('tPoints').value=(t.points||[]).join('\n');
+  if (id) {
+    const t = S.tasks.find(x => x.id === id); if (!t) return;
+    document.getElementById('taskMTitle').textContent = '業務を編集';
+    document.getElementById('tName').value = t.name;
+    document.getElementById('tDesc').value = t.description || '';
+    sel.value = t.assignee;
+    document.getElementById('tDue').value = t.due || '';
+    document.getElementById('tTag').value = t.tag || 'sns';
+    document.getElementById('tStatus').value = t.status;
+    document.getElementById('tProg').value = t.progress;
+    document.getElementById('tProgVal').textContent = t.progress;
+    document.getElementById('tPoints').value = (t.points || []).join('\n');
   } else {
-    document.getElementById('taskMTitle').textContent='タスクを追加';
-    document.getElementById('tName').value='';
-    document.getElementById('tDue').value='';
-    document.getElementById('tTag').value='sns';
-    document.getElementById('tStatus').value='todo';
-    document.getElementById('tProg').value=0;
-    document.getElementById('tProgVal').textContent=0;
-    document.getElementById('tPoints').value='';
-    if(S.currentUser&&S.currentUser!=='全員') sel.value=S.currentUser;
+    document.getElementById('taskMTitle').textContent = '業務を追加';
+    document.getElementById('tName').value = '';
+    document.getElementById('tDesc').value = '';
+    document.getElementById('tDue').value = '';
+    document.getElementById('tTag').value = 'sns';
+    document.getElementById('tStatus').value = 'todo';
+    document.getElementById('tProg').value = 0;
+    document.getElementById('tProgVal').textContent = 0;
+    document.getElementById('tPoints').value = '';
+    // Default assignee to current user
+    if (S.currentUser) sel.value = S.currentUser.name;
   }
-  document.getElementById('taskMov').style.display='flex';
+  document.getElementById('taskMov').style.display = 'flex';
 }
 
-function saveTask(){
-  const name=document.getElementById('tName').value.trim();
-  const assignee=document.getElementById('tAssignee').value;
-  if(!name){alert('タスク名を入力してください');return;}
-  if(!assignee){alert('担当者を選択してください');return;}
-  const d={name,assignee,due:document.getElementById('tDue').value,
-    tag:document.getElementById('tTag').value,status:document.getElementById('tStatus').value,
-    progress:parseInt(document.getElementById('tProg').value),
-    points:document.getElementById('tPoints').value.split('\n').map(s=>s.trim()).filter(Boolean)};
-  if(editTaskId){
-    const i=S.tasks.findIndex(t=>t.id===editTaskId);
-    if(i!==-1) S.tasks[i]={...S.tasks[i],...d};
+function saveTask() {
+  const name = document.getElementById('tName').value.trim();
+  const assignee = document.getElementById('tAssignee').value;
+  if (!name) { alert('業務名を入力してください'); return; }
+  if (!assignee) { alert('担当者を選択してください'); return; }
+  const d = {
+    name, assignee,
+    description: document.getElementById('tDesc').value.trim(),
+    due: document.getElementById('tDue').value,
+    tag: document.getElementById('tTag').value,
+    status: document.getElementById('tStatus').value,
+    progress: parseInt(document.getElementById('tProg').value),
+    points: document.getElementById('tPoints').value.split('\n').map(s => s.trim()).filter(Boolean)
+  };
+  if (editTaskId) {
+    const i = S.tasks.findIndex(t => t.id === editTaskId);
+    if (i !== -1) S.tasks[i] = { ...S.tasks[i], ...d };
   } else {
-    const nid=S.tasks.length?Math.max(...S.tasks.map(t=>t.id))+1:1;
-    S.tasks.push({id:nid,notes:'',...d});
+    const nid = S.tasks.length ? Math.max(...S.tasks.map(t => t.id)) + 1 : 1;
+    S.tasks.push({ id: nid, notes: '', ...d });
   }
-  save(); closeMov('taskMov'); renderOverview();
+  save(); closeMov('taskMov'); renderDetail(); renderOverview();
 }
 
-// ── DETAIL MODAL ───────────────────────────────────────
-function openDetailModal(id){
-  editDetailId=id;
-  const t=S.tasks.find(x=>x.id===id); if(!t) return;
-  document.getElementById('detailMTitle').textContent=t.name;
-  document.getElementById('detailMContent').innerHTML=`
+// ══════════════════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════════════════
+function openDetailModal(id) {
+  editDetailId = id;
+  const t = S.tasks.find(x => x.id === id); if (!t) return;
+  document.getElementById('detailMTitle').textContent = t.name;
+  document.getElementById('detailMContent').innerHTML = `
     <div class="lock-notice">✏️ 担当者（${esc(t.assignee)}）として編集中</div>
     <div class="fg"><label class="flabel">ステータス</label>
       <select class="fselect" id="dStatus">
@@ -683,90 +918,51 @@ function openDetailModal(id){
         oninput="document.getElementById('dProgVal').textContent=this.value"></div>
     <div class="fg"><label class="flabel">進捗メモ</label>
       <textarea class="ftextarea" id="dNotes" placeholder="作業の進捗・気づき・ブロッカーなどを記録">${esc(t.notes||'')}</textarea></div>`;
-  document.getElementById('detailMov').style.display='flex';
+  document.getElementById('detailMov').style.display = 'flex';
 }
 
-function saveDetail(){
-  const t=S.tasks.find(x=>x.id===editDetailId); if(!t) return;
-  t.status=document.getElementById('dStatus').value;
-  t.progress=parseInt(document.getElementById('dProg').value);
-  t.notes=document.getElementById('dNotes').value.trim();
+function saveDetail() {
+  const t = S.tasks.find(x => x.id === editDetailId); if (!t) return;
+  t.status = document.getElementById('dStatus').value;
+  t.progress = parseInt(document.getElementById('dProg').value);
+  t.notes = document.getElementById('dNotes').value.trim();
   save(); closeMov('detailMov'); renderDetail(); renderOverview();
 }
 
-// ── PERSON MODAL ───────────────────────────────────────
-function openPersonModal(id){
-  editPersonId=id||null;
-  selColor=COLORS[0];
-  document.getElementById('colorOpts').innerHTML=COLORS.map(c=>
-    `<div class="color-opt ${c===selColor?'sel':''}" style="background:${c}" onclick="pickColor('${c}',this)"></div>`
-  ).join('');
-
-  if(id){
-    const p=S.roster.find(x=>x.id===id); if(!p) return;
-    document.getElementById('personMTitle').textContent='メンバーを編集';
-    document.getElementById('pName').value=p.name;
-    document.getElementById('pRole').value=p.role||'';
-    selColor=p.color||COLORS[0];
-    document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.style.background===selColor));
-  } else {
-    document.getElementById('personMTitle').textContent='メンバーを追加';
-    document.getElementById('pName').value='';
-    document.getElementById('pRole').value='';
-  }
-  document.getElementById('personMov').style.display='flex';
+// ══════════════════════════════════════════════════════
+// CONFIRM DELETE
+// ══════════════════════════════════════════════════════
+function confirmDel(taskId) {
+  const t = S.tasks.find(x => x.id === taskId); if (!t) return;
+  document.getElementById('confirmText').textContent = `「${t.name}」を削除しますか？この操作は取り消せません。`;
+  confirmCb = () => { S.tasks = S.tasks.filter(x => x.id !== taskId); save(); renderOverview(); renderDetail(); };
+  document.getElementById('confirmMov').style.display = 'flex';
 }
-
-function pickColor(c,el){
-  selColor=c;
-  document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('sel'));
-  el.classList.add('sel');
-}
-
-function savePerson(){
-  const name=document.getElementById('pName').value.trim();
-  if(!name){alert('名前を入力してください');return;}
-  if(editPersonId){
-    const p=S.roster.find(x=>x.id===editPersonId);
-    if(p){p.name=name;p.role=document.getElementById('pRole').value.trim();p.color=selColor;}
-  } else {
-    const nid=S.roster.length?Math.max(...S.roster.map(r=>r.id))+1:1;
-    S.roster.push({id:nid,name,role:document.getElementById('pRole').value.trim(),color:selColor});
-  }
-  save(); refreshUserSel(); closeMov('personMov'); renderRoster();
-}
-
-// ── CONFIRM DELETE ─────────────────────────────────────
-function confirmDel(type,id){
-  if(type==='task'){
-    const t=S.tasks.find(x=>x.id===id); if(!t) return;
-    document.getElementById('confirmText').textContent=`「${t.name}」を削除しますか？この操作は取り消せません。`;
-    confirmCb=()=>{S.tasks=S.tasks.filter(x=>x.id!==id);save();renderOverview();};
-  } else {
-    const p=S.roster.find(x=>x.id===id); if(!p) return;
-    document.getElementById('confirmText').textContent=`「${p.name}」を名簿から削除しますか？`;
-    confirmCb=()=>{S.roster=S.roster.filter(x=>x.id!==id);save();refreshUserSel();renderRoster();};
-  }
-  document.getElementById('confirmMov').style.display='flex';
-}
-document.getElementById('confirmBtn').onclick=()=>{
-  if(confirmCb) confirmCb();
-  closeMov('confirmMov'); confirmCb=null;
+document.getElementById('confirmBtn').onclick = () => {
+  if (confirmCb) confirmCb();
+  closeMov('confirmMov'); confirmCb = null;
 };
 
-// ── MODAL UTILS ────────────────────────────────────────
-function closeMov(id,e){
-  if(e&&e.target!==document.getElementById(id)) return;
-  document.getElementById(id).style.display='none';
+// ══════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════
+function closeMov(id, e) {
+  if (e && e.target !== document.getElementById(id)) return;
+  document.getElementById(id).style.display = 'none';
 }
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function stL(s) { return { todo:'未着手', doing:'進行中', done:'完了' }[s] || s; }
+function tagL(t) { return { sns:'SNS設定', design:'デザイン', content:'コンテンツ', research:'リサーチ', other:'その他' }[t] || t || ''; }
 
-// ── HELPERS ────────────────────────────────────────────
-function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function stL(s){return{todo:'未着手',doing:'進行中',done:'完了'}[s]||s;}
-function tagL(t){return{sns:'SNS設定',design:'デザイン',content:'コンテンツ',research:'リサーチ',other:'その他'}[t]||t||'';}
-
-// ── INIT ───────────────────────────────────────────────
-load(); refreshUserSel(); renderOverview();
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+load();
+if (S.currentUser) {
+  launchApp();
+} else {
+  document.getElementById('loginScreen').style.display = 'flex';
+}
 </script>
 </body>
 </html>
