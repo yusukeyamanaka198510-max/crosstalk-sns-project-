@@ -1213,7 +1213,9 @@ function renderDetail() {
     acc.innerHTML = '<div class="empty"><div class="ei">📌</div><div class="et">「＋ 業務追加」からタスクを追加してください</div></div>';
     return;
   }
-  S.tasks.forEach(t => {
+  const statusOrder = { doing: 0, todo: 1, done: 2 };
+  const sorted = [...S.tasks].sort((a, b) => (statusOrder[a.status] ?? 1) - (statusOrder[b.status] ?? 1));
+  sorted.forEach(t => {
     const cu = S.currentUser;
     const canEdit = cu && (cu.role === 'leader' || (t.assignees||[]).includes(cu.name));
     const pts = t.points && t.points.length
