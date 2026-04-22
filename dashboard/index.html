@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cross Talk — プロジェクト管理</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --primary:#6C63FF;--primary-light:#EEF0FF;--accent:#FF6584;
-  --green:#2ED573;--yellow:#FFD93D;--red:#FF4757;
+  --green:#2ED573;--yellow:#FFD93D;--red:#FF4757;--orange:#F97316;
   --gray-50:#F8F9FC;--gray-100:#F0F2F8;--gray-300:#CBD2E0;
   --gray-500:#8592AD;--gray-700:#4A5568;--gray-900:#1A202C;
   --header-h:56px;--sidebar-w:224px;--radius:12px;
@@ -51,6 +52,7 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--gray-50)
   justify-content:space-between;padding:0 24px;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .header-logo{font-size:16px;font-weight:700;color:var(--primary);}
 .header-logo span{font-size:12px;color:var(--gray-500);font-weight:400;margin-left:8px;}
+.header-right{display:flex;align-items:center;gap:12px;}
 .header-user{display:flex;align-items:center;gap:10px;}
 .user-info{display:flex;flex-direction:column;align-items:flex-end;}
 .user-name{font-size:13px;font-weight:700;}
@@ -60,6 +62,31 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--gray-50)
 .btn-logout{padding:6px 14px;border-radius:8px;border:1.5px solid var(--gray-300);
   background:#fff;font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;transition:all .15s;}
 .btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* ── NOTIFICATION BELL ─────────────────────────────── */
+.notif-bell-wrap{position:relative;cursor:pointer;padding:7px;border-radius:8px;
+  color:var(--gray-500);font-size:18px;transition:all .15s;line-height:1;}
+.notif-bell-wrap:hover{background:var(--gray-100);color:var(--gray-700);}
+.notif-badge{position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;
+  border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:340px;max-height:420px;
+  overflow-y:auto;background:#fff;border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:500;border:1px solid var(--gray-100);}
+.notif-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  border-bottom:1px solid var(--gray-100);font-size:13px;font-weight:700;
+  position:sticky;top:0;background:#fff;z-index:1;}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;
+  border-bottom:1px solid var(--gray-100);transition:background .1s;}
+.notif-item:hover{background:var(--gray-50);}
+.notif-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.notif-body{flex:1;min-width:0;}
+.notif-task{font-size:13px;font-weight:600;}
+.notif-meta{font-size:11px;color:var(--gray-500);margin-top:2px;line-height:1.5;}
+.notif-dismiss{background:none;border:none;cursor:pointer;color:var(--gray-300);
+  font-size:16px;padding:0 4px;line-height:1;transition:color .15s;flex-shrink:0;}
+.notif-dismiss:hover{color:var(--red);}
+.notif-empty{padding:24px;text-align:center;font-size:13px;color:var(--gray-500);}
 
 /* ── LAYOUT ────────────────────────────────────────── */
 .layout{display:flex;padding-top:var(--header-h);min-height:100vh;}
@@ -192,6 +219,50 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
 .assignee-edit-chip .rm-btn{cursor:pointer;font-size:12px;line-height:1;opacity:.7;}
 .assignee-edit-chip .rm-btn:hover{opacity:1;color:var(--red);}
 
+/* ── GANTT / SCHEDULE ──────────────────────────────── */
+.gantt-outer{overflow-x:auto;padding-bottom:8px;}
+.gantt-head-row{display:flex;align-items:flex-end;margin-bottom:4px;min-width:600px;}
+.gantt-head-spacer{width:220px;min-width:220px;flex-shrink:0;}
+.gantt-head-timeline{flex:1;position:relative;height:24px;}
+.gantt-tick{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--gray-500);
+  font-weight:600;white-space:nowrap;bottom:0;}
+.gantt-row{display:flex;align-items:center;min-height:54px;border-bottom:1px solid var(--gray-100);
+  min-width:600px;}
+.gantt-row:last-child{border-bottom:none;}
+.gantt-row:hover{background:var(--gray-50);}
+.gantt-label{width:220px;min-width:220px;padding:6px 16px 6px 0;flex-shrink:0;}
+.gantt-task-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gantt-task-name.overdue,.gantt-task-name.critical{color:var(--red);}
+.gantt-task-name.warning{color:var(--orange);}
+.gantt-task-name.done{color:var(--gray-500);text-decoration:line-through;}
+.gantt-timeline{flex:1;position:relative;height:54px;}
+.gantt-bar{position:absolute;top:20px;height:14px;border-radius:7px;}
+.gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);
+  z-index:5;opacity:.9;}
+.gantt-today-line::before{content:'今日';position:absolute;top:2px;left:50%;
+  transform:translateX(-50%);font-size:9px;font-weight:700;color:var(--red);
+  white-space:nowrap;background:#fff;padding:0 2px;}
+.gantt-marker{position:absolute;top:0;bottom:0;display:flex;flex-direction:column;
+  align-items:center;transform:translateX(-50%);z-index:4;}
+.gantt-marker-dot{width:10px;height:10px;border-radius:50%;border:2px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);margin-top:15px;flex-shrink:0;}
+.gantt-marker-label{font-size:9px;font-weight:600;color:var(--gray-500);
+  margin-top:2px;white-space:nowrap;}
+.gantt-legend{display:flex;gap:14px;flex-wrap:wrap;padding:12px 0 4px;font-size:11px;color:var(--gray-500);}
+.gantt-legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;}
+
+/* ── PROGRESS DASHBOARD ────────────────────────────── */
+.prog-5grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:900px){.prog-5grid{grid-template-columns:repeat(3,1fr);}}
+.prog-stat{background:#fff;border-radius:var(--radius);padding:14px 16px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;}
+.prog-stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;}
+.prog-stat-num{font-size:22px;font-weight:700;line-height:1;}
+.prog-stat-label{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.prog-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:760px){.prog-2col{grid-template-columns:1fr;}}
+
 /* ── MODAL ─────────────────────────────────────────── */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;
   display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s;}
@@ -219,6 +290,10 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
 .empty{text-align:center;padding:40px 20px;color:var(--gray-500);}
 .empty .ei{font-size:36px;margin-bottom:10px;}
 .f2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.info-box{background:#EEF0FF;border-radius:10px;padding:14px;font-size:13px;
+  line-height:1.7;margin-bottom:18px;color:var(--gray-700);}
+.info-box a{color:var(--primary);}
+code{background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px;}
 </style>
 </head>
 <body>
@@ -274,12 +349,22 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
 <div id="app">
   <header class="header">
     <div class="header-logo">Cross Talk <span>SNS集客プロジェクト</span></div>
-    <div class="header-user">
-      <div class="user-info">
-        <div class="user-name" id="headerName">—</div>
-        <span class="user-role-badge" id="headerRole">—</span>
+    <div class="header-right">
+      <!-- 通知ベル -->
+      <div style="position:relative" id="notifWrap">
+        <div class="notif-bell-wrap" onclick="toggleNotifPanel()" title="通知">
+          🔔
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </div>
+        <div class="notif-panel" id="notifPanel" style="display:none"></div>
       </div>
-      <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+      <div class="header-user">
+        <div class="user-info">
+          <div class="user-name" id="headerName">—</div>
+          <span class="user-role-badge" id="headerRole">—</span>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+      </div>
     </div>
   </header>
 
@@ -287,6 +372,8 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
     <aside class="sidebar">
       <div class="nav-section">メニュー</div>
       <div class="nav-item active" onclick="showPage('overview',this)">📊 プロジェクト全体</div>
+      <div class="nav-item" onclick="showPage('schedule',this)">📅 スケジュール</div>
+      <div class="nav-item" onclick="showPage('progress',this)">📈 進捗ダッシュボード</div>
       <div class="nav-item" onclick="showPage('personal',this)">👤 個人ページ</div>
       <div class="nav-item" onclick="showPage('detail',this)">📌 業務詳細</div>
       <div class="nav-section">管理</div>
@@ -328,6 +415,38 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
             </table>
           </div>
         </div>
+      </div>
+
+      <!-- SCHEDULE (GANTT) -->
+      <div class="page" id="page-schedule">
+        <div class="page-hd">
+          <div><div class="page-title">スケジュール</div><div class="page-sub">期日ベースのガントチャート</div></div>
+        </div>
+        <div class="card">
+          <div class="gantt-legend">
+            <span><span class="gantt-legend-dot" style="background:var(--primary)"></span>進行中・未着手（余裕あり）</span>
+            <span><span class="gantt-legend-dot" style="background:var(--yellow)"></span>期日まで10日以内</span>
+            <span><span class="gantt-legend-dot" style="background:var(--orange)"></span>期日まで7日以内</span>
+            <span><span class="gantt-legend-dot" style="background:var(--red)"></span>期日まで3日以内 / 超過</span>
+            <span><span class="gantt-legend-dot" style="background:var(--green)"></span>完了</span>
+          </div>
+          <div class="gantt-outer">
+            <div class="gantt-head-row">
+              <div class="gantt-head-spacer"></div>
+              <div class="gantt-head-timeline" id="ganttHeader"></div>
+            </div>
+            <div id="ganttBody"></div>
+          </div>
+          <div id="ganttNoDue" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- PROGRESS DASHBOARD -->
+      <div class="page" id="page-progress">
+        <div class="page-hd">
+          <div><div class="page-title">進捗ダッシュボード</div><div class="page-sub">メンバー別・カテゴリ別の進捗状況</div></div>
+        </div>
+        <div id="progressContent"></div>
       </div>
 
       <!-- PERSONAL -->
@@ -441,12 +560,42 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
   </div>
 </div>
 
+<!-- ══ MODAL: NOTIFICATION SETTINGS ═════════════════ -->
+<div id="notifSettingsMov" class="modal-ov" style="display:none" onclick="closeMov('notifSettingsMov',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">📧 メール通知設定</div>
+    <div class="info-box">
+      <strong>EmailJS</strong> を使ってメール通知を送信します（無料・月200件まで）。<br>
+      ① <a href="https://www.emailjs.com" target="_blank">emailjs.com</a> でアカウント作成<br>
+      ② Email Services でGmail等を接続<br>
+      ③ Email Templates でテンプレートを作成<br>
+      　テンプレート変数：<code>to_email</code> <code>to_name</code> <code>task_name</code> <code>due_date</code> <code>days_left</code><br>
+      ④ Account → Public Key をコピー
+    </div>
+    <div class="fg"><label class="flabel">Service ID</label>
+      <input class="finput" id="ejsServiceId" placeholder="service_xxxxxxx"></div>
+    <div class="fg"><label class="flabel">Template ID</label>
+      <input class="finput" id="ejsTemplateId" placeholder="template_xxxxxxx"></div>
+    <div class="fg"><label class="flabel">Public Key</label>
+      <input class="finput" id="ejsPublicKey" placeholder="xxxxxxxxxxxxxxxxxxxx"></div>
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">
+      ※ 未設定の場合はアプリ内通知のみ表示されます。
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="testEmailSend()" style="margin-right:auto">テスト送信</button>
+      <button class="btn btn-ghost" onclick="closeMov('notifSettingsMov')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveNotifSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════
 const LEADER_CODE = '101010';
 const AVATAR_COLORS = ['#6C63FF','#FF6584','#2ED573','#FFD93D','#FF4757','#1E90FF','#FF7F50','#9B59B6'];
+const NOTIF_THRESHOLDS = [10, 5, 3, 1]; // days before deadline
 
 // ══════════════════════════════════════════════════════
 // STATE
@@ -557,6 +706,7 @@ function launchApp() {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector('.nav-item').classList.add('active');
   renderOverview();
+  checkDeadlineNotifications();
 }
 
 // ══════════════════════════════════════════════════════
@@ -569,6 +719,8 @@ function showPage(name, el) {
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
   if (name === 'overview') renderOverview();
+  else if (name === 'schedule') renderSchedule();
+  else if (name === 'progress') renderProgressDash();
   else if (name === 'personal') renderPersonal();
   else if (name === 'detail') renderDetail();
   else if (name === 'assign') renderAssign();
@@ -582,7 +734,6 @@ function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').repl
 function stL(s) { return {todo:'未着手',doing:'進行中',done:'完了'}[s]||s; }
 function tagL(t) { return {sns:'SNS設定',design:'デザイン',content:'コンテンツ',research:'リサーチ',other:'その他'}[t]||t||''; }
 
-// assignees配列 → chips HTML
 function assigneeChipsHTML(assignees) {
   if (!assignees || !assignees.length) return '<span style="font-size:12px;color:var(--gray-500)">未割当</span>';
   return '<div class="a-chips">' + assignees.map(a => `<span class="a-chip">${esc(a)}</span>`).join('') + '</div>';
@@ -591,6 +742,13 @@ function assigneeChipsHTML(assignees) {
 function closeMov(id, e) {
   if (e && e.target !== document.getElementById(id)) return;
   document.getElementById(id).style.display = 'none';
+}
+
+function todayDate() {
+  const d = new Date(); d.setHours(0,0,0,0); return d;
+}
+function daysUntil(dueDateStr) {
+  return Math.round((new Date(dueDateStr) - todayDate()) / 86400000);
 }
 
 // ══════════════════════════════════════════════════════
@@ -626,7 +784,7 @@ function renderOverview() {
     return;
   }
   tasks.forEach(t => {
-    const ov = t.status !== 'done' && t.due && new Date(t.due) < new Date();
+    const ov = t.status !== 'done' && t.due && new Date(t.due) < todayDate();
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><div style="font-weight:500">${esc(t.name)}</div>
@@ -646,6 +804,246 @@ function renderOverview() {
 }
 
 // ══════════════════════════════════════════════════════
+// SCHEDULE (GANTT)
+// ══════════════════════════════════════════════════════
+function renderSchedule() {
+  const bodyEl   = document.getElementById('ganttBody');
+  const headerEl = document.getElementById('ganttHeader');
+  const noDueEl  = document.getElementById('ganttNoDue');
+
+  bodyEl.innerHTML = ''; headerEl.innerHTML = ''; noDueEl.innerHTML = '';
+
+  if (!S.tasks.length) {
+    bodyEl.innerHTML = '<div class="empty"><div class="ei">📅</div><div>タスクがありません。業務詳細ページから追加してください。</div></div>';
+    return;
+  }
+
+  const tasksWithDue = S.tasks.filter(t => t.due);
+  const taskNoDue    = S.tasks.filter(t => !t.due);
+  const today = todayDate();
+
+  if (!tasksWithDue.length) {
+    bodyEl.innerHTML = '<div class="empty"><div class="ei">📅</div><div>期日が設定されているタスクがありません。</div></div>';
+    if (taskNoDue.length) noDueEl.innerHTML = `<div style="background:var(--gray-100);border-radius:8px;padding:12px;font-size:13px;color:var(--gray-500)">期日未設定：${taskNoDue.map(t=>`<strong>${esc(t.name)}</strong>`).join('、')}</div>`;
+    return;
+  }
+
+  // Date range
+  const dueDates   = tasksWithDue.map(t => new Date(t.due));
+  const minDate    = new Date(Math.min(...dueDates, today));
+  const maxDate    = new Date(Math.max(...dueDates));
+  const rangeStart = new Date(minDate); rangeStart.setDate(rangeStart.getDate() - 7);
+  const rangeEnd   = new Date(maxDate); rangeEnd.setDate(rangeEnd.getDate() + 14);
+  const totalMs    = rangeEnd - rangeStart;
+
+  function pct(d) {
+    return Math.min(100, Math.max(0, (new Date(d) - rangeStart) / totalMs * 100));
+  }
+  const todayPct = pct(today);
+
+  // Week tick marks
+  const ticks = [];
+  const d = new Date(rangeStart);
+  while (d <= rangeEnd) {
+    ticks.push({ date: new Date(d), p: pct(d) });
+    d.setDate(d.getDate() + 7);
+  }
+  headerEl.innerHTML = ticks.map(tk =>
+    `<div class="gantt-tick" style="left:${tk.p}%">${(tk.date.getMonth()+1)}/${tk.date.getDate()}</div>`
+  ).join('');
+
+  const todayLineHTML = `<div class="gantt-today-line" style="left:${todayPct}%"></div>`;
+
+  // Sort tasks by due date
+  const sorted = [...tasksWithDue].sort((a, b) => new Date(a.due) - new Date(b.due));
+
+  bodyEl.innerHTML = sorted.map(t => {
+    const duePct   = pct(new Date(t.due));
+    const daysLeft = daysUntil(t.due);
+    const isOverdue = t.status !== 'done' && daysLeft < 0;
+    const isDone    = t.status === 'done';
+
+    let barLeft, barWidth, barColor;
+    if (isDone) {
+      barLeft = 0; barWidth = duePct; barColor = 'var(--green)';
+    } else if (isOverdue) {
+      barLeft = duePct; barWidth = todayPct - duePct; barColor = 'var(--red)';
+    } else {
+      barLeft = todayPct; barWidth = duePct - todayPct;
+      barColor = daysLeft <= 3 ? 'var(--red)' : daysLeft <= 7 ? 'var(--orange)' : daysLeft <= 10 ? 'var(--yellow)' : 'var(--primary)';
+    }
+
+    const nameClass = isDone ? 'done' : isOverdue ? 'overdue' : daysLeft <= 3 ? 'critical' : daysLeft <= 7 ? 'warning' : '';
+    const markerColor = isDone ? 'var(--green)' : isOverdue ? 'var(--red)' : barColor;
+    const daysLabel = isDone ? '完了' : isOverdue ? `${Math.abs(daysLeft)}日超過` : daysLeft === 0 ? '今日！' : daysLeft === 1 ? '明日！' : `残${daysLeft}日`;
+
+    return `<div class="gantt-row">
+      <div class="gantt-label">
+        <div class="gantt-task-name ${nameClass}" title="${esc(t.name)}">${esc(t.name)}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;align-items:center">
+          ${(t.assignees||[]).map(a=>`<span class="a-chip" style="font-size:9px;padding:1px 6px">${esc(a)}</span>`).join('')}
+          <span class="badge badge-${t.status}" style="font-size:10px;padding:1px 6px">${stL(t.status)}</span>
+        </div>
+      </div>
+      <div class="gantt-timeline">
+        ${todayLineHTML}
+        ${barWidth > 0.5 ? `<div class="gantt-bar" style="left:${barLeft}%;width:${Math.min(barWidth, 100-barLeft)}%;background:${barColor};opacity:${isDone?0.55:0.8}"></div>` : ''}
+        <div class="gantt-marker" style="left:${duePct}%">
+          <div class="gantt-marker-dot" style="background:${markerColor}"></div>
+          <div class="gantt-marker-label">${t.due.slice(5)} <span style="color:${markerColor};font-weight:700">${daysLabel}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (taskNoDue.length) {
+    noDueEl.innerHTML = `<div style="background:var(--gray-100);border-radius:8px;padding:12px;font-size:13px;color:var(--gray-500)">
+      📌 期日未設定：${taskNoDue.map(t=>`<strong>${esc(t.name)}</strong>`).join('、')}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// PROGRESS DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderProgressDash() {
+  const el = document.getElementById('progressContent');
+  const today = todayDate();
+  const tasks = S.tasks;
+  const total = tasks.length;
+  const done  = tasks.filter(t => t.status === 'done').length;
+  const doing = tasks.filter(t => t.status === 'doing').length;
+  const todo  = tasks.filter(t => t.status === 'todo').length;
+  const overdue = tasks.filter(t => t.status !== 'done' && t.due && new Date(t.due) < today).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const circ = 2 * Math.PI * 30;
+
+  // Urgent tasks (within 10 days, not done)
+  const urgent = tasks.filter(t => {
+    if (t.status === 'done' || !t.due) return false;
+    const d = daysUntil(t.due);
+    return d >= 0 && d <= 10;
+  }).sort((a, b) => new Date(a.due) - new Date(b.due));
+
+  // Member stats
+  const memberStats = S.users.map(user => {
+    const mt   = tasks.filter(t => (t.assignees||[]).includes(user.name));
+    const mDone  = mt.filter(t => t.status === 'done').length;
+    const mDoing = mt.filter(t => t.status === 'doing').length;
+    const mTodo  = mt.filter(t => t.status === 'todo').length;
+    const mPct   = mt.length ? Math.round(mDone / mt.length * 100) : 0;
+    const mOver  = mt.filter(t => t.status !== 'done' && t.due && new Date(t.due) < today).length;
+    return { user, mt, mDone, mDoing, mTodo, mPct, mOver };
+  });
+
+  // Tag distribution
+  const tags = ['sns','design','content','research','other'];
+  const tagCounts = tags.map(tag => ({ tag, count: tasks.filter(t => (t.tag||'other') === tag).length }));
+  const maxTag = Math.max(...tagCounts.map(tc => tc.count), 1);
+
+  el.innerHTML = `
+    <!-- 5-stat summary -->
+    <div class="prog-5grid">
+      <div class="prog-stat"><div class="prog-stat-icon" style="background:#EEF0FF">📋</div><div><div class="prog-stat-num" style="color:var(--primary)">${total}</div><div class="prog-stat-label">総タスク</div></div></div>
+      <div class="prog-stat"><div class="prog-stat-icon" style="background:#F0F2F8">⭕</div><div><div class="prog-stat-num" style="color:var(--gray-500)">${todo}</div><div class="prog-stat-label">未着手</div></div></div>
+      <div class="prog-stat"><div class="prog-stat-icon" style="background:#FFF4E0">⏳</div><div><div class="prog-stat-num" style="color:#D97706">${doing}</div><div class="prog-stat-label">進行中</div></div></div>
+      <div class="prog-stat"><div class="prog-stat-icon" style="background:#E6FBF1">✅</div><div><div class="prog-stat-num" style="color:#059669">${done}</div><div class="prog-stat-label">完了</div></div></div>
+      <div class="prog-stat"><div class="prog-stat-icon" style="background:#FFF5F5">⚠️</div><div><div class="prog-stat-num" style="color:var(--red)">${overdue}</div><div class="prog-stat-label">期日超過</div></div></div>
+    </div>
+
+    <!-- Overall progress ring -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">全体完了率</div>
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+          <svg width="80" height="80" style="transform:rotate(-90deg)">
+            <circle fill="none" stroke="var(--gray-100)" stroke-width="10" cx="40" cy="40" r="30"/>
+            <circle fill="none" stroke="var(--primary)" stroke-width="10" cx="40" cy="40" r="30"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ*(1-pct/100)).toFixed(1)}"
+              stroke-linecap="round" style="transition:stroke-dashoffset .6s"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--primary)">${pct}%</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div class="bar-bg" style="margin-bottom:8px">
+            <div class="bar-fill fill-done" style="width:${total?done/total*100:0}%"></div>
+          </div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:10px">${done} / ${total} タスク完了</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--gray-300);margin-right:5px;vertical-align:middle"></span>未着手 <strong>${todo}</strong></span>
+            <span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--primary);margin-right:5px;vertical-align:middle"></span>進行中 <strong>${doing}</strong></span>
+            <span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);margin-right:5px;vertical-align:middle"></span>完了 <strong>${done}</strong></span>
+            ${overdue ? `<span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--red);margin-right:5px;vertical-align:middle"></span>期日超過 <strong style="color:var(--red)">${overdue}</strong></span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member progress -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">👤 メンバー別進捗</div>
+      ${memberStats.length === 0
+        ? '<div style="color:var(--gray-500);font-size:13px">メンバーが登録されていません</div>'
+        : memberStats.map(ms => `
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--gray-100)">
+            <div class="avatar" style="background:${ms.user.color||'#6C63FF'};width:38px;height:38px;font-size:15px;flex-shrink:0">${ms.user.name[0]}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">${esc(ms.user.name)}
+                  <span style="font-size:10px;font-weight:500;color:var(--gray-500);margin-left:6px">${ms.user.role==='leader'?'👑 統括者':'👤 メンバー'}</span>
+                </div>
+                <div style="font-size:12px;color:var(--gray-500)">${ms.mDone}/${ms.mt.length}件完了 · <strong style="color:var(--primary)">${ms.mPct}%</strong></div>
+              </div>
+              <div class="bar-bg" style="margin-bottom:6px">
+                <div class="bar-fill" style="width:${ms.mPct}%;background:${ms.user.color||'var(--primary)'}"></div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;color:var(--gray-500)">未着手 <strong>${ms.mTodo}</strong></span>
+                <span style="font-size:11px;color:#D97706">進行中 <strong>${ms.mDoing}</strong></span>
+                <span style="font-size:11px;color:#059669">完了 <strong>${ms.mDone}</strong></span>
+                ${ms.mOver ? `<span style="font-size:11px;color:var(--red);font-weight:700">⚠ 超過 ${ms.mOver}</span>` : ''}
+                ${ms.mt.length === 0 ? '<span style="font-size:11px;color:var(--gray-300)">担当なし</span>' : ''}
+              </div>
+            </div>
+          </div>`).join('')}
+    </div>
+
+    <!-- Two columns: urgent + category -->
+    <div class="prog-2col">
+      <div class="card">
+        <div class="card-title">⏰ 直近10日の期日タスク</div>
+        ${urgent.length === 0
+          ? '<div style="padding:12px 0;color:var(--gray-500);font-size:13px">直近10日に期日のタスクはありません 🎉</div>'
+          : urgent.map(t => {
+              const d = daysUntil(t.due);
+              const col = d === 0 ? 'var(--red)' : d === 1 ? 'var(--red)' : d <= 3 ? 'var(--orange)' : d <= 5 ? '#D97706' : 'var(--gray-500)';
+              const lbl = d === 0 ? '今日！' : d === 1 ? '明日！' : `${d}日後`;
+              return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100)">
+                <div style="min-width:46px;text-align:center;font-size:12px;font-weight:700;color:${col}">${lbl}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
+                  <div style="font-size:11px;color:var(--gray-500)">${(t.assignees||[]).map(a=>esc(a)).join('・') || '未割当'}</div>
+                </div>
+                <span class="badge badge-${t.status}">${stL(t.status)}</span>
+              </div>`;
+            }).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">🏷 カテゴリ別タスク数</div>
+        ${tagCounts.every(tc => tc.count === 0)
+          ? '<div style="color:var(--gray-500);font-size:13px">タスクがありません</div>'
+          : tagCounts.filter(tc => tc.count > 0).map(tc => `
+            <div style="margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                <span class="tag-chip tag-${tc.tag}">${tagL(tc.tag)}</span>
+                <span style="font-size:12px;color:var(--gray-500)">${tc.count}件</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill fill-doing" style="width:${tc.count/maxTag*100}%"></div></div>
+            </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
 // PERSONAL
 // ══════════════════════════════════════════════════════
 function renderPersonal() {
@@ -659,7 +1057,6 @@ function renderPersonal() {
   }
 
   S.users.forEach((user, i) => {
-    // 自分が assignees に含まれているタスクを表示
     const myTasks = S.tasks.filter(t => (t.assignees || []).includes(user.name));
     const done = myTasks.filter(t => t.status === 'done').length;
     const pct  = myTasks.length ? Math.round(done / myTasks.length * 100) : 0;
@@ -793,7 +1190,7 @@ function renderAssign() {
     return;
   }
   S.tasks.forEach(t => {
-    const ov = t.status !== 'done' && t.due && new Date(t.due) < new Date();
+    const ov = t.status !== 'done' && t.due && new Date(t.due) < todayDate();
     const assignees = t.assignees || [];
     const chips = assignees.map(a => `
       <span class="assignee-edit-chip">
@@ -917,7 +1314,6 @@ function openTaskModal(id) {
     document.getElementById('tProg').value = 0;
     document.getElementById('tProgVal').textContent = 0;
     document.getElementById('tPoints').value = '';
-    // Default: check current user
     const defaultSelected = S.currentUser ? [S.currentUser.name] : [];
     buildAssigneeCheckList(defaultSelected);
   }
@@ -997,6 +1393,199 @@ document.getElementById('confirmBtn').onclick = () => {
   if (confirmCb) confirmCb();
   closeMov('confirmMov'); confirmCb = null;
 };
+
+// ══════════════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════════════
+function getEjsConfig() {
+  const s = localStorage.getItem('ct2_ejs_config');
+  return s ? JSON.parse(s) : null;
+}
+function getSentNotifKeys() {
+  const s = localStorage.getItem('ct2_sent_notifs');
+  return s ? JSON.parse(s) : [];
+}
+function markNotifKeysSent(keys) {
+  const existing = getSentNotifKeys();
+  const merged = [...new Set([...existing, ...keys])];
+  localStorage.setItem('ct2_sent_notifs', JSON.stringify(merged));
+}
+function getInAppNotifs() {
+  const s = localStorage.getItem('ct2_inapp_notifs');
+  return s ? JSON.parse(s) : [];
+}
+function saveInAppNotifs(arr) {
+  localStorage.setItem('ct2_inapp_notifs', JSON.stringify(arr));
+}
+
+function checkDeadlineNotifications() {
+  const today = todayDate();
+  const sent  = getSentNotifKeys();
+  const cfg   = getEjsConfig();
+  const newKeys = [];
+  const newNotifs = [];
+
+  S.tasks.forEach(task => {
+    if (task.status === 'done' || !task.due) return;
+    const days = daysUntil(task.due);
+
+    NOTIF_THRESHOLDS.forEach(threshold => {
+      if (days !== threshold) return;
+      const key = `${task.id}_d${threshold}`;
+      if (sent.includes(key)) return;
+
+      // Send via EmailJS if configured
+      if (cfg && cfg.serviceId && cfg.templateId && cfg.publicKey) {
+        (task.assignees || []).forEach(name => {
+          const user = S.users.find(u => u.name === name);
+          if (!user || !user.email) return;
+          emailjs.send(cfg.serviceId, cfg.templateId, {
+            to_email:     user.email,
+            to_name:      user.name,
+            task_name:    task.name,
+            due_date:     task.due,
+            days_left:    threshold,
+            project_name: 'Cross Talk SNS集客プロジェクト'
+          }, cfg.publicKey).catch(err => console.warn('EmailJS error:', err));
+        });
+      }
+
+      newNotifs.push({
+        id: key,
+        taskId: task.id,
+        taskName: task.name,
+        due: task.due,
+        daysLeft: threshold,
+        assignees: task.assignees || [],
+        createdAt: Date.now()
+      });
+      newKeys.push(key);
+    });
+  });
+
+  if (newKeys.length) {
+    markNotifKeysSent(newKeys);
+    const all = [...getInAppNotifs(), ...newNotifs];
+    saveInAppNotifs(all);
+  }
+  renderNotifBadge();
+}
+
+function renderNotifBadge() {
+  const n = getInAppNotifs().length;
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (n > 0) { badge.textContent = n > 9 ? '9+' : n; badge.style.display = 'flex'; }
+  else { badge.style.display = 'none'; }
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  renderNotifPanelContent();
+  panel.style.display = 'block';
+}
+
+function renderNotifPanelContent() {
+  const notifs = getInAppNotifs();
+  const panel  = document.getElementById('notifPanel');
+  if (!notifs.length) {
+    panel.innerHTML = `
+      <div class="notif-panel-hd">
+        <span>🔔 通知</span>
+        <button class="btn btn-ghost btn-sm" onclick="openNotifSettings()">⚙️ 設定</button>
+      </div>
+      <div class="notif-empty">新しい通知はありません ✨</div>`;
+    return;
+  }
+  const items = notifs.map(n => {
+    const col = n.daysLeft <= 1 ? 'var(--red)' : n.daysLeft <= 3 ? 'var(--orange)' : n.daysLeft <= 5 ? '#D97706' : 'var(--primary)';
+    const lbl = n.daysLeft === 1 ? '明日が期日！' : `期日${n.daysLeft}日前`;
+    const emailSent = (getEjsConfig()?.serviceId) ? '📧 メール送信済み' : '📱 アプリ内通知';
+    return `<div class="notif-item">
+      <div class="notif-dot" style="background:${col}"></div>
+      <div class="notif-body">
+        <div class="notif-task">${esc(n.taskName)}</div>
+        <div class="notif-meta">${lbl} · 期日: ${n.due}<br>${n.assignees.map(a=>esc(a)).join('・')} · ${emailSent}</div>
+      </div>
+      <button class="notif-dismiss" onclick="dismissNotif('${n.id}')">×</button>
+    </div>`;
+  }).join('');
+  panel.innerHTML = `
+    <div class="notif-panel-hd">
+      <span>🔔 通知 (${notifs.length})</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="clearAllNotifs()">全消去</button>
+        <button class="btn btn-ghost btn-sm" onclick="openNotifSettings()">⚙️</button>
+      </div>
+    </div>
+    ${items}`;
+}
+
+function dismissNotif(id) {
+  saveInAppNotifs(getInAppNotifs().filter(n => n.id !== id));
+  renderNotifPanelContent();
+  renderNotifBadge();
+}
+
+function clearAllNotifs() {
+  saveInAppNotifs([]);
+  renderNotifPanelContent();
+  renderNotifBadge();
+}
+
+function openNotifSettings() {
+  document.getElementById('notifPanel').style.display = 'none';
+  const cfg = getEjsConfig() || {};
+  document.getElementById('ejsServiceId').value  = cfg.serviceId  || '';
+  document.getElementById('ejsTemplateId').value = cfg.templateId || '';
+  document.getElementById('ejsPublicKey').value  = cfg.publicKey  || '';
+  document.getElementById('notifSettingsMov').style.display = 'flex';
+}
+
+function saveNotifSettings() {
+  const cfg = {
+    serviceId:  document.getElementById('ejsServiceId').value.trim(),
+    templateId: document.getElementById('ejsTemplateId').value.trim(),
+    publicKey:  document.getElementById('ejsPublicKey').value.trim()
+  };
+  localStorage.setItem('ct2_ejs_config', JSON.stringify(cfg));
+  closeMov('notifSettingsMov');
+  alert('通知設定を保存しました。次回ログイン時から適用されます。');
+}
+
+function testEmailSend() {
+  const cfg = {
+    serviceId:  document.getElementById('ejsServiceId').value.trim(),
+    templateId: document.getElementById('ejsTemplateId').value.trim(),
+    publicKey:  document.getElementById('ejsPublicKey').value.trim()
+  };
+  if (!cfg.serviceId || !cfg.templateId || !cfg.publicKey) {
+    alert('Service ID・Template ID・Public Key をすべて入力してください。');
+    return;
+  }
+  const cu = S.currentUser;
+  if (!cu) return;
+  emailjs.send(cfg.serviceId, cfg.templateId, {
+    to_email:     cu.email,
+    to_name:      cu.name,
+    task_name:    'テスト通知',
+    due_date:     new Date().toISOString().slice(0,10),
+    days_left:    3,
+    project_name: 'Cross Talk SNS集客プロジェクト'
+  }, cfg.publicKey)
+    .then(() => alert(`✅ テストメールを ${cu.email} に送信しました！`))
+    .catch(err => alert(`❌ 送信失敗：${err.text || err}`));
+}
+
+// 通知パネル外クリックで閉じる
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('notifWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const panel = document.getElementById('notifPanel');
+    if (panel) panel.style.display = 'none';
+  }
+});
 
 // ══════════════════════════════════════════════════════
 // INIT
