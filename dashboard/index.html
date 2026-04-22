@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cross Talk — プロジェクト管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
 :root{
   --primary:#6C63FF;--primary-light:#EEF0FF;--accent:#FF6584;
@@ -294,9 +296,23 @@ table.assign-tbl{width:100%;border-collapse:collapse;font-size:13px;}
   line-height:1.7;margin-bottom:18px;color:var(--gray-700);}
 .info-box a{color:var(--primary);}
 code{background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px;}
+
+/* ── LOADING ───────────────────────────────────────── */
+#loadingScreen{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9999;gap:16px;}
+.loading-spinner{width:40px;height:40px;border:4px solid var(--gray-100);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--gray-500);font-weight:500;}
 </style>
 </head>
 <body>
+
+<!-- ══ LOADING ══════════════════════════════════════ -->
+<div id="loadingScreen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">データを読み込み中...</div>
+</div>
 
 <!-- ══ LOGIN ════════════════════════════════════════ -->
 <div id="loginScreen">
@@ -598,6 +614,21 @@ const AVATAR_COLORS = ['#6C63FF','#FF6584','#2ED573','#FFD93D','#FF4757','#1E90F
 const NOTIF_THRESHOLDS = [10, 5, 3, 1]; // days before deadline
 
 // ══════════════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBbnxCe04tQrrbepH0ipfLuqWbDvv8Bvr8",
+  authDomain: "crosstalk-sns.firebaseapp.com",
+  databaseURL: "https://crosstalk-sns-default-rtdb.firebaseio.com",
+  projectId: "crosstalk-sns",
+  storageBucket: "crosstalk-sns.firebasestorage.app",
+  messagingSenderId: "197635950757",
+  appId: "1:197635950757:web:e9726b80a32a89a6e1a54c"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
 let S = { users:[], tasks:[], currentUser:null };
@@ -607,30 +638,60 @@ let selectedRole = 'member';
 // ══════════════════════════════════════════════════════
 // PERSISTENCE + MIGRATION
 // ══════════════════════════════════════════════════════
-function load() {
-  const u = localStorage.getItem('ct2_users');
-  const t = localStorage.getItem('ct2_tasks');
-  const cu = localStorage.getItem('ct2_currentUser');
-  S.users = u ? JSON.parse(u) : [];
-  S.tasks = t ? JSON.parse(t) : [];
-  S.currentUser = cu ? JSON.parse(cu) : null;
+function migrateTask(t) {
+  if (!t || typeof t !== 'object') return null;
+  if (!t.assignees) {
+    t.assignees = t.assignee ? [t.assignee] : [];
+    delete t.assignee;
+  }
+  return t;
+}
 
-  // Migration: assignee (string) → assignees (array)
-  S.tasks = S.tasks.map(t => {
-    if (!t.assignees) {
-      t.assignees = t.assignee ? [t.assignee] : [];
-      delete t.assignee;
-    }
-    return t;
-  });
+function toArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  return Object.values(val).filter(Boolean);
+}
+
+async function load() {
+  const cu = localStorage.getItem('ct2_currentUser');
+  S.currentUser = cu ? JSON.parse(cu) : null;
+  const snap = await db.ref('/').once('value');
+  const data = snap.val() || {};
+  S.users = toArray(data.users);
+  S.tasks = toArray(data.tasks).map(migrateTask).filter(Boolean);
 }
 
 function save() {
-  localStorage.setItem('ct2_users', JSON.stringify(S.users));
-  localStorage.setItem('ct2_tasks', JSON.stringify(S.tasks));
+  db.ref('/').set({ users: S.users, tasks: S.tasks });
   S.currentUser
     ? localStorage.setItem('ct2_currentUser', JSON.stringify(S.currentUser))
     : localStorage.removeItem('ct2_currentUser');
+}
+
+function listenRealtime() {
+  db.ref('/').on('value', snap => {
+    const data = snap.val() || {};
+    S.users = toArray(data.users);
+    S.tasks = toArray(data.tasks).map(migrateTask).filter(Boolean);
+    refreshCurrentPage();
+  });
+}
+
+function refreshCurrentPage() {
+  if (!S.currentUser) return;
+  const modals = ['taskMov','detailMov','confirmMov','notifSettingsMov'];
+  if (modals.some(id => document.getElementById(id)?.style.display !== 'none')) return;
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+  if (id === 'overview') renderOverview();
+  else if (id === 'schedule') renderSchedule();
+  else if (id === 'progress') renderProgressDash();
+  else if (id === 'personal') renderPersonal();
+  else if (id === 'detail') renderDetail();
+  else if (id === 'assign') renderAssign();
+  else if (id === 'roster') renderRoster();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1590,9 +1651,21 @@ document.addEventListener('click', function(e) {
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
-load();
-if (S.currentUser) launchApp();
-else document.getElementById('loginScreen').style.display = 'flex';
+async function init() {
+  document.getElementById('loadingScreen').style.display = 'flex';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  try {
+    await load();
+  } catch(e) {
+    console.error('Firebase load error:', e);
+  }
+  document.getElementById('loadingScreen').style.display = 'none';
+  if (S.currentUser) launchApp();
+  else document.getElementById('loginScreen').style.display = 'flex';
+  listenRealtime();
+}
+init();
 </script>
 </body>
 </html>
