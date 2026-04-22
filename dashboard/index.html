@@ -656,10 +656,35 @@ function toArray(val) {
 async function load() {
   const cu = localStorage.getItem('ct2_currentUser');
   S.currentUser = cu ? JSON.parse(cu) : null;
+
   const snap = await db.ref('/').once('value');
   const data = snap.val() || {};
   S.users = toArray(data.users);
   S.tasks = toArray(data.tasks).map(migrateTask).filter(Boolean);
+
+  // ── 旧localStorage → Firebase への一回限りの移行 ──
+  if (!localStorage.getItem('ct2_migrated')) {
+    let changed = false;
+    const oldUsers = localStorage.getItem('ct2_users');
+    const oldTasks = localStorage.getItem('ct2_tasks');
+
+    if (oldUsers) {
+      JSON.parse(oldUsers).forEach(lu => {
+        if (lu && !S.users.find(u => u.email === lu.email)) {
+          S.users.push(lu); changed = true;
+        }
+      });
+    }
+    if (oldTasks) {
+      JSON.parse(oldTasks).map(migrateTask).filter(Boolean).forEach(lt => {
+        if (!S.tasks.find(t => t.id === lt.id)) {
+          S.tasks.push(lt); changed = true;
+        }
+      });
+    }
+    if (changed) await db.ref('/').set({ users: S.users, tasks: S.tasks });
+    localStorage.setItem('ct2_migrated', '1');
+  }
 }
 
 function save() {
