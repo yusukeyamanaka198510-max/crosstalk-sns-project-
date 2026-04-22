@@ -1325,6 +1325,7 @@ function removeAssignee(taskId, name) {
 function renderRoster() {
   const grid = document.getElementById('rosterGrid');
   grid.innerHTML = '';
+  const amLeader = S.currentUser?.role === 'leader';
   if (!S.users.length) {
     grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ei">👥</div><div class="et">登録済みメンバーがいません</div></div>';
     return;
@@ -1334,20 +1335,46 @@ function renderRoster() {
     const isLeader = user.role === 'leader';
     const bStyle = isLeader ? 'background:#FFF4E0;color:#D97706' : 'background:var(--primary-light);color:var(--primary)';
     const bLabel = isLeader ? '👑 統括者' : '👤 メンバー';
+    const isSelf = S.currentUser?.id === user.id;
+    // 統括者のみ削除ボタン表示。自分自身は削除不可。
+    const delBtn = amLeader && !isSelf
+      ? `<button class="btn btn-danger btn-sm" style="margin-top:8px;font-size:11px" onclick="confirmDelUser(${user.id})">削除</button>`
+      : '';
     const card = document.createElement('div');
     card.className = 'roster-card';
+    card.style.flexDirection = 'column';
+    card.style.alignItems = 'flex-start';
     card.innerHTML = `
-      <div class="avatar" style="background:${user.color||'#6C63FF'}">${user.name[0]}</div>
-      <div class="rcard-body">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <div class="rcard-name">${esc(user.name)}</div>
-          <span class="rcard-role-badge" style="${bStyle}">${bLabel}</span>
+      <div style="display:flex;align-items:center;gap:14px;width:100%">
+        <div class="avatar" style="background:${user.color||'#6C63FF'}">${user.name[0]}</div>
+        <div class="rcard-body">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <div class="rcard-name">${esc(user.name)}</div>
+            <span class="rcard-role-badge" style="${bStyle}">${bLabel}</span>
+          </div>
+          <div class="rcard-email">${esc(user.email)}</div>
+          <div class="rcard-count">担当タスク ${cnt}件</div>
         </div>
-        <div class="rcard-email">${esc(user.email)}</div>
-        <div class="rcard-count">担当タスク ${cnt}件</div>
-      </div>`;
+      </div>
+      ${delBtn}`;
     grid.appendChild(card);
   });
+}
+
+function confirmDelUser(userId) {
+  const user = S.users.find(u => u.id === userId); if (!user) return;
+  document.getElementById('confirmText').textContent =
+    `「${user.name}」をプロジェクトから削除しますか？この操作は取り消せません。`;
+  confirmCb = () => {
+    S.users = S.users.filter(u => u.id !== userId);
+    // 担当タスクからも除外
+    S.tasks = S.tasks.map(t => ({
+      ...t,
+      assignees: (t.assignees || []).filter(a => a !== user.name)
+    }));
+    save(); renderRoster(); renderOverview();
+  };
+  document.getElementById('confirmMov').style.display = 'flex';
 }
 
 // ══════════════════════════════════════════════════════
